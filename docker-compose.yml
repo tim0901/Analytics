@@ -4,13 +4,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "80:80"
     volumes:
       - ./:/var/www/html
     environment:
       XDEBUG_CONFIG: remote_host=host.docker.internal
+
+
   mysql:
     image: phpstorm/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ROOT_USER=root
+      - MYSQL_DATABASE=my_database
+      - MYSQL_USER=Alex
+      - MYSQL_PASSWORD=password
     ports:
     - "33056:3306"
