@@ -24,21 +24,21 @@ else{
 
 
 //Create a table
-$sql = "CREATE TABLE MyGuests (
+/*$sql = "CREATE TABLE MyGuests (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 firstname VARCHAR(30) NOT NULL,
 lastname VARCHAR(30) NOT NULL,
 email VARCHAR(50),
 reg_date TIMESTAMP
-)";
-
+)";*/
+/*
 if($connection->query($sql) === true){
     echo "Table MyGuests created successfully!"."<br>";
 }
 else{
     echo "Error creating table: ". $connection->error."<br>";
 }
-
+*/
 //Prepare a Statement: can be executed multiple times with high efficiency
 $statement = $connection->prepare("INSERT INTO MyGuests(firstname, lastname, email) VALUES (?,?,?)");
 $statement->bind_param("sss",$firstname, $lastname, $email);
@@ -84,7 +84,7 @@ if($result->num_rows > 0){
 else{
     echo "0 results.";
 }
-
+/*
 //Delete table
 $sql = "DROP TABLE MyGuests";
 if($connection->query($sql) === true){
@@ -93,5 +93,5 @@ if($connection->query($sql) === true){
 else{
     echo "Error deleting table: ". $connection->error."<br>";
 }
-
+*/
 $connection->close();
