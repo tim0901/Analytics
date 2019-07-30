@@ -38,6 +38,7 @@ class HomePageHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
+
         if ($this->template === null) {
             return new JsonResponse([
                 'welcome' => 'Congratulations! You have installed the zend-expressive skeleton application.',
@@ -46,6 +47,7 @@ class HomePageHandler implements RequestHandlerInterface
         }
 
         $data = [];
+
 
         switch ($this->containerName) {
             case 'Aura\Di\Container':
@@ -97,6 +99,6 @@ class HomePageHandler implements RequestHandlerInterface
             $data['templateDocs'] = 'https://docs.zendframework.com/zend-view/';
         }
 
-        return new HtmlResponse($this->template->render('app::home-page', $data));
+        return new HtmlResponse($this->template->render('app::test-template', $data));
     }
 }
