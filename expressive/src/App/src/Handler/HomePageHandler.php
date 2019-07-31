@@ -99,6 +99,6 @@ class HomePageHandler implements RequestHandlerInterface
             $data['templateDocs'] = 'https://docs.zendframework.com/zend-view/';
         }
 
-        return new HtmlResponse($this->template->render('app::test-template', $data));
+        return new HtmlResponse($this->template->render('app::home-page', $data));
     }
 }

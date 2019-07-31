@@ -32,8 +32,11 @@ use Zend\Expressive\MiddlewareFactory;
  *     'contact'
  * );
  */
+
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container) : void {
     $app->get('/', App\Handler\HomePageHandler::class, 'home');
     $app->get('/info',App\Handler\InfoPageHandler::class);
     $app->get('/api/ping', App\Handler\PingHandler::class, 'api.ping');
+    // $app->get('/table', App\Handler\DisplayTablePageHandler::class, 'table');
+    $app->get('/table[/{action}[/{id:\d+}]]', App\Handler\DisplayTablePageHandler::class);
 };

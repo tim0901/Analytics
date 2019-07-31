@@ -38,6 +38,7 @@ class ConfigProvider
             'factories'  => [
                 Handler\HomePageHandler::class => Handler\HomePageHandlerFactory::class,
                 Handler\InfoPageHandler::class => Handler\InfoPageHandlerFactory::class,
+                Handler\DisplayTablePageHandler::class => Handler\DisplayTablePageHandlerFactory::class,
             ],
         ];
     }
