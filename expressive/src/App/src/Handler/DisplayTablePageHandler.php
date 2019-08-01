@@ -7,6 +7,7 @@ namespace App\Handler;
 use Fig\Http\Message\StatusCodeInterface;
 use http\Env\Response;
 use mysqli;
+use phpDocumentor\Reflection\Types\This;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -43,46 +44,10 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     }
 
-    public function indexAction(ServerRequestInterface $request, mysqli $connection){
-
-        //Check connection was successful
-        if($connection->connect_error){
-            $data['error'] = ("MySQL connection failed. " . $connection->connect_error);
-        }
-        else{
-
-            //Select table
-            $sql = "SELECT id, firstname, lastname, email FROM my_table";
-            $result = $connection->query($sql);
-
-            //Check there is data present
-            if($result->num_rows > 0){
-
-                //Table container to be passed to template
-                $t = null;
-                $i = 0;
-                //Output all rows of the table
-                while($row = $result->fetch_assoc()){
-                    $t[$i]['id'] = $row['id'];
-                    $t[$i]['firstname'] = $row["firstname"];
-                    $t[$i]['lastname'] = $row["lastname"];
-                    $t[$i]['email'] = $row["email"];
-                    $i++;
-                }
-                $data['table'] = $t;
-            }
-            else{
-                $data['error'] = 'No data.';
-            }
-            $connection->close();
-        }
-
-        return new HtmlResponse($this->template->render('app::table-display-template', $data));
-    }
-
     public function getAction(ServerRequestInterface $request, mysqli $connection){
 
-        $desiredID = $request->getAttribute('id');
+        $desiredColumn = $request->getAttribute('desiredColumn','id');
+        $desiredValue = $request->getAttribute('desiredValue');
 
         //Check connection was successful
         if($connection->connect_error){
@@ -90,13 +55,18 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         }
         else{
 
-            //Select table
-            $sql = "SELECT id, firstname, lastname, email FROM my_table";
+            //Filter table for desired results, or show all
+            if($desiredValue !== null){
+                $sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn."='".$desiredValue."'";
+            }
+            else{
+                $sql = "SELECT id, firstname, lastname, email FROM my_table ";
+            }
+
             $result = $connection->query($sql);
 
             //Check there is data present
             if($result->num_rows > 0){
-
                 //Table container to be passed to template
                 $t = null;
                 $i = 0;
@@ -104,14 +74,11 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                 //For each row in the table
                 while($row = $result->fetch_assoc()){
 
-                    //If it is the correct entry,
-                    if($row["id"] === $desiredID){
-                        $t[$i]['id'] = $row['id'];
-                        $t[$i]['firstname'] = $row["firstname"];
-                        $t[$i]['lastname'] = $row["lastname"];
-                        $t[$i]['email'] = $row["email"];
-                        $i++;
-                    }
+                    $t[$i]['id'] = $row['id'];
+                    $t[$i]['firstname'] = $row["firstname"];
+                    $t[$i]['lastname'] = $row["lastname"];
+                    $t[$i]['email'] = $row["email"];
+                    $i++;
                 }
 
                 $data['table'] = $t;
@@ -126,9 +93,28 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         return new HtmlResponse($this->template->render('app::table-display-template', $data));
     }
 
+    public function postAction(ServerRequestInterface $request, mysqli $connection){
+
+        $firstname = $request->getAttribute('firstname',null);
+        $lastname = $request->getAttribute('lastname',null);
+        $email = $request->getAttribute('email',null);
+
+        $sql = "INSERT INTO my_table (firstname, lastname, email) VALUES ('".$firstname."', '".$lastname."', '".$email."')";
+
+        if ($connection->query($sql) === true){
+            return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
+        }
+        else{
+            return new EmptyResponse(StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY);
+        }
+    }
     public function putAction(ServerRequestInterface $request, mysqli $connection){
         //TODO putAction
     }
+    public function deleteAction(ServerRequestInterface $request, mysqli $connection){
+        //TODO deleteAction
+    }
+
 
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
@@ -140,27 +126,22 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         $pass ="password";
         $databasename ="my_database";
 
-        //Create container for data to be sent to the template
-        $data = [];
-
         //Create a connection
         $connection = new mysqli($servername,$username,$pass,$databasename);
 
-
-
-        switch ($request->getAttribute('action','index')){
-            case 'index':
-                return $this->indexAction($request,$connection);
-            case 'get':
+        switch ($request->getMethod()){
+            case 'GET':
                 return $this->getAction($request,$connection);
-            case 'put':
+            case 'POST':
+                return $this->postAction($request,$connection);
+            case 'PUT':
                 return $this->putAction($request,$connection);
+            case 'DELETE':
+                return $this->deleteAction($request,$connection);
+
             default:
-
                 $connection->close();
-                return new HtmlResponse($this->template->render('app::info-template'));
-
-               // return new EmptyResponse(StatusCodeInterface::STATUS_NOT_FOUND);
+                return new EmptyResponse(StatusCodeInterface::STATUS_NOT_FOUND);
         }
     }
 }
