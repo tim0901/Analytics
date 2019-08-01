@@ -52,7 +52,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         else{
 
             //Select table
-            $sql = "SELECT id, firstname, lastname, email FROM MyGuests";
+            $sql = "SELECT id, firstname, lastname, email FROM my_table";
             $result = $connection->query($sql);
 
             //Check there is data present
@@ -91,22 +91,31 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         else{
 
             //Select table
-            $sql = "SELECT id, firstname, lastname, email FROM MyGuests";
+            $sql = "SELECT id, firstname, lastname, email FROM my_table";
             $result = $connection->query($sql);
 
             //Check there is data present
             if($result->num_rows > 0){
 
-                //Output the data for the desired row
+                //Table container to be passed to template
+                $t = null;
+                $i = 0;
+
+                //For each row in the table
                 while($row = $result->fetch_assoc()){
+
+                    //If it is the correct entry,
                     if($row["id"] === $desiredID){
-                        $data['id'] = $row["id"];
-                        $data['firstname'] = $row["firstname"];
-                        $data['lastname'] = $row["lastname"];
-                        $data['email'] = $row["email"];
-                        break;
+                        $t[$i]['id'] = $row['id'];
+                        $t[$i]['firstname'] = $row["firstname"];
+                        $t[$i]['lastname'] = $row["lastname"];
+                        $t[$i]['email'] = $row["email"];
+                        $i++;
                     }
                 }
+
+                $data['table'] = $t;
+
             }
             else{
                 $data['error'] = 'No data.';
