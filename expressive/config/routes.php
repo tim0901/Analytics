@@ -34,10 +34,12 @@ use Zend\Expressive\MiddlewareFactory;
  */
 
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container) : void {
-//    $app->get('/', App\Handler\HomePageHandler::class, 'home');
-//    $app->get('/info',App\Handler\InfoPageHandler::class);
-//    $app->get('/api/ping', App\Handler\PingHandler::class, 'api.ping');
-//    $app->get('/table/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
-//    $app->get('/table[{desiredColumn:firstname|lastname|email}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
-    $app->post('/table/new{firstname}.{lastname}[.{email}]', App\Handler\DisplayTablePageHandler::class);
+    $app->get('/', App\Handler\HomePageHandler::class, 'home');
+    $app->get('/info',App\Handler\InfoPageHandler::class);
+    $app->get('/api/ping', App\Handler\PingHandler::class, 'api.ping');
+    $app->get('/table/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
+    $app->get('/table/[{desiredColumn:firstname|lastname|email}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
+    $app->post('/table/firstname={firstname}&lastname={lastname}&email=[{email}]', App\Handler\DisplayTablePageHandler::class);
+    $app->patch('/table/{id:\d+}&{desiredColumn:firstname|lastname|email}={desiredValue}',App\Handler\DisplayTablePageHandler::class);
+    $app->delete('/table/{desiredValue:\d+}',App\Handler\DisplayTablePageHandler::class);
 };

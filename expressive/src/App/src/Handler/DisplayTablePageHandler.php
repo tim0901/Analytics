@@ -105,14 +105,40 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY);
+            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
         }
     }
-    public function putAction(ServerRequestInterface $request, mysqli $connection){
-        //TODO putAction
+
+    public function patchAction(ServerRequestInterface $request, mysqli $connection){
+
+        $id = $request->getAttribute('id');
+        $desiredColumn = $request->getAttribute('desiredColumn');
+        $desiredValue = $request->getAttribute('desiredValue');
+
+        $sql = "UPDATE my_table SET ".$desiredColumn."='".$desiredValue."' WHERE id = '".$id."'";
+
+        if($connection->query($sql) === true){
+            return new EmptyResponse(StatusCodeInterface::STATUS_OK);
+        }
+        else{
+            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+        }
+
     }
+
     public function deleteAction(ServerRequestInterface $request, mysqli $connection){
-        //TODO deleteAction
+
+        $desiredValue = $request->getAttribute('desiredValue');
+
+        $sql = "DELETE FROM my_table WHERE id = '".$desiredValue."'";
+
+        if ($connection->query($sql) === true){
+            return new EmptyResponse(StatusCodeInterface::STATUS_OK);
+        }
+        else{
+            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+        }
+
     }
 
 
@@ -134,8 +160,8 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                 return $this->getAction($request,$connection);
             case 'POST':
                 return $this->postAction($request,$connection);
-            case 'PUT':
-                return $this->putAction($request,$connection);
+            case 'PATCH':
+                return $this->patchAction($request,$connection);
             case 'DELETE':
                 return $this->deleteAction($request,$connection);
 
