@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-chdir(__DIR__ . '/../');
+chdir(__DIR__ . '/api/');
 
 require 'vendor/autoload.php';
 

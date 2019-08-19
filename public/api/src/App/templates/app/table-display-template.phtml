@@ -1,0 +1,102 @@
+<?php $this->headTitle('Table'); ?>
+
+<div class="jumbotron" id="jumbotron">
+
+    <script>
+        function createTable() {
+            var table = document.createElement("TABLE");
+            table.setAttribute("id","myTable");
+            document.getElementById("jumbotron").append(table);
+
+            document.getElementById("myTable").style.border = "1px solid black";
+
+            var array = <?php echo json_encode($this->table,JSON_PRETTY_PRINT) ?>;
+
+            var header = document.createElement("TR");
+            header.setAttribute("id", "tableHeaderRow");
+            header.style.border = "inherit";
+            header.style.padding = "5px";
+            document.getElementById("myTable").appendChild(header);
+
+            var idHeader = document.createElement("TD");
+            var content = document.createTextNode("Id");
+            idHeader.setAttribute("id","idHeader");
+            idHeader.style.border = "inherit";
+            idHeader.padding = "5px";
+            idHeader.appendChild(content);
+            document.getElementById("tableHeaderRow").appendChild(idHeader);
+
+            var fsHeader = document.createElement("TD");
+            content = document.createTextNode("First name");
+            fsHeader.setAttribute("id","fsHeader");
+            fsHeader.style.border = "inherit";
+            fsHeader.padding = "5px";
+            fsHeader.appendChild(content);
+            document.getElementById("tableHeaderRow").appendChild(fsHeader);
+
+            var lsHeader = document.createElement("TD");
+            content = document.createTextNode("Last name");
+            lsHeader.setAttribute("id","lsHeader");
+            lsHeader.style.border = "inherit";
+            lsHeader.padding = "5px";
+            lsHeader.appendChild(content);
+            document.getElementById("tableHeaderRow").appendChild(lsHeader);
+
+            var emHeader = document.createElement("TD");
+            content = document.createTextNode("Email");
+            emHeader.setAttribute("id","emHeader");
+            emHeader.style.border = "inherit";
+            emHeader.padding = "5px";
+            emHeader.appendChild(content);
+            document.getElementById("tableHeaderRow").appendChild(emHeader);
+
+
+
+            for(var i = 0; i < array.length; i++){
+
+                //Create row
+                var row = document.createElement("TR");
+                row.setAttribute("id", "Row" + i);
+                row.style.padding = "5px";
+                row.style.border = "inherit";
+                document.getElementById("myTable").appendChild(row);
+
+                //Create cells
+                var idCell = document.createElement("TD");
+                content = document.createTextNode(array[i].id);
+                idCell.setAttribute("id","Row" + i + "id");
+                idCell.style.border = "inherit";
+                idCell.style.padding = "10px";
+                idCell.appendChild(content);
+                document.getElementById("Row"+i).appendChild(idCell);
+
+                var fnCell = document.createElement("TD");
+                content = document.createTextNode(array[i].firstname);
+                fnCell.setAttribute("id","Row" + i + "fn");
+                fnCell.style.border = "inherit";
+                fnCell.style.padding = "10px";
+                fnCell.appendChild(content);
+                document.getElementById("Row"+i).appendChild(fnCell);
+
+                var lnCell = document.createElement("TD");
+                content = document.createTextNode(array[i].lastname);
+                lnCell.setAttribute("id","Row" + i + "ln");
+                lnCell.style.padding = "10px";
+                lnCell.style.border = "inherit";
+                lnCell.appendChild(content);
+                document.getElementById("Row"+i).appendChild(lnCell);
+
+                var emCell = document.createElement("TD");
+                content = document.createTextNode(array[i].email);
+                emCell.setAttribute("id","Row" + i + "em");
+                emCell.style.border = "inherit";
+                emCell.style.padding = "10px";
+                emCell.appendChild(content);
+                document.getElementById("Row"+i).appendChild(emCell);
+            }
+
+        }
+    </script>
+    <button onclick="createTable()">Table!</button>
+
+</div>

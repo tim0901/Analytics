@@ -1,0 +1,78 @@
+
+<div class="layoutRow">
+    <!--Column 1-->
+    <div class="lColumn">
+        <h3>  </h3>
+    </div>
+    <!--Column 2-->
+    <div class="column">
+        <!-- Table controller -->
+        <div>
+            <table id="Table">
+                <tr class="tableHeader">
+                    <th>Id</th>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Email</th>
+                    <th></th>
+                </tr>
+                <div id="here" />
+                <tr ng-repeat="x in records" class="row">
+                    <td>{{x.id}}</td>
+                    <td>{{x.firstname}}</td>
+                    <td>{{x.lastname}}</td>
+                    <td>{{x.email}}</td>
+                    <td><button data-ng-click="edit(x.id, x.firstname, x.lastname, x.email)">Edit</button></td>
+                    <td><button appdata-ng-click="del(x.id)">Remove</button></td>
+                </tr>
+            </table>
+            <button data-ng-click="crea()">New</button>
+            <p></p>
+            <select ng-model="searchColumn" ng-options="x for x in columns"></select> <input id="searchInput" type="text" ng-model="searchParameter"> <button id="searchButton" data-ng-click="search()">Search</button> <button data-ng-click="clear()">Clear Search</button>
+        </div>
+
+
+    </div>
+    <!--Column 3-->
+    <div class="rColumn">
+        <h3>  </h3>
+    </div>
+</div>
+
+
+<!--Modals-->
+<div ng-controller="modalController">
+
+    <!-- EDIT MODAL-->
+    <div ng-show="openEditModal">
+        <div id="editModal" class="modal">
+
+            <!-- Modal content -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <input type="text" ng-model="id" readonly>
+                <input type="text" ng-model="firstname">
+                <input type="text" ng-model="lastname">
+                <input type="text" ng-model="email">
+                <button data-ng-click="submit()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create MODAL-->
+    <div ng-show="openCreateModal" class="ng-hide">
+        <div id="createModal" class="modal">
+
+            <!-- Modal content -->
+            <div class="create-modal-content">
+                <span class="close">&times;</span>
+                <input type="text" ng-model="newfirstname">
+                <input type="text" ng-model="newlastname">
+                <input type="text" ng-model="newemail">
+                <button data-ng-click="create()">Create</button>
+            </div>
+
+        </div>
+    </div>
+
+</div>

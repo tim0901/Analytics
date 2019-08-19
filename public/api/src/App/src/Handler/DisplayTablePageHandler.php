@@ -57,7 +57,10 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
             //Filter table for desired results, or show all
             if($desiredValue !== null){
-                $sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn."='".$desiredValue."'";
+                if($desiredColumn !== "id"){
+                    $desiredValue = "%" . $desiredValue . "%";
+                }
+                $sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
             }
             else{
                 $sql = "SELECT id, firstname, lastname, email FROM my_table ";
@@ -70,7 +73,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                 //Table container to be passed to template
                 $t = null;
                 $i = 0;
-
+                $str = null;
                 //For each row in the table
                 while($row = $result->fetch_assoc()){
 
@@ -81,16 +84,15 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                     $i++;
                 }
 
-                $data['table'] = $t;
-
+                $data = $t;
+                $connection->close();
+                return new JsonResponse($data);
             }
             else{
-                $data['error'] = 'No data.';
+                $connection->close();
+                return new HtmlResponse(StatusCodeInterface::STATUS_NOT_FOUND);
             }
-            $connection->close();
         }
-
-        return new HtmlResponse($this->template->render('app::table-display-template', $data));
     }
 
     public function postAction(ServerRequestInterface $request, mysqli $connection){
@@ -126,6 +128,24 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     }
 
+    public function putAction(ServerRequestInterface $request, mysqli $connection){
+        $id = $request->getAttribute('id');
+        for($i = 0; $i < 3; $i++){
+
+            $desiredColumn[$i] = $request->getAttribute('desiredColumn'.$i);
+            $desiredValue[$i] = $request->getAttribute('desiredValue'.$i);
+        }
+
+        $sql = "UPDATE my_table SET ".$desiredColumn[0]."='".$desiredValue[0]."', ".$desiredColumn[1]."='".$desiredValue[1] ."', ".$desiredColumn[2]."='".$desiredValue[2] ."' WHERE id = '".$id."'";
+
+        if($connection->query($sql) === true){
+            return new EmptyResponse(StatusCodeInterface::STATUS_OK);
+        }
+        else{
+            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+        }
+    }
+
     public function deleteAction(ServerRequestInterface $request, mysqli $connection){
 
         $desiredValue = $request->getAttribute('desiredValue');
@@ -140,7 +160,6 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         }
 
     }
-
 
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
@@ -162,6 +181,8 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                 return $this->postAction($request,$connection);
             case 'PATCH':
                 return $this->patchAction($request,$connection);
+            case 'PUT':
+                return $this->putAction($request,$connection);
             case 'DELETE':
                 return $this->deleteAction($request,$connection);
 

@@ -8,10 +8,9 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./expressive/:/var/www/html
+      - ./:/var/www/html
     environment:
       XDEBUG_CONFIG: remote_host=host.docker.internal
-
 
   mysql:
     image: phpstorm/mysql
