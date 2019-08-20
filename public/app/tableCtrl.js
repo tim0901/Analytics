@@ -120,8 +120,8 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     //Delete button
     $scope.del =
         function del(idx) {
-            console.log("Deleting id:" + (idx+1));
-            $http.delete("/api/public/table/" + (idx+1)).then(function(response){
+            console.log("Deleting id:" + (idx));
+            $http.delete("/api/public/table/" + (idx)).then(function(response){
                 console.log(response);
                 $rootScope.$emit('reloadTable');
             })
