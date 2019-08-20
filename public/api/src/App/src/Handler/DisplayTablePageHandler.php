@@ -90,7 +90,8 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             }
             else{
                 $connection->close();
-                return new HtmlResponse(StatusCodeInterface::STATUS_NOT_FOUND);
+                $data = null;
+                return new JsonResponse($data);
             }
         }
     }

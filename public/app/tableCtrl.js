@@ -7,8 +7,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     //Columns for drop down list
     $scope.columns = ["id","firstname","lastname","email"];
 
-    //Load table data from server
-    $scope.loadData = function loadData(column = null, parameter = null){
+    function getData(column = null, parameter = null){
         $rootScope.records = null;
 
         //Checks that the column exists in the table, if it doesn't, column is set to null
@@ -20,74 +19,80 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         //Sends GET request corresponding to given parameters
         if(column === "id" && parameter !== null){
             //Id lookup
-            $http.get("/api/public/table/" + parameter).then(function(response){
-                console.log(response);
-                $rootScope.records = response.data;});
+            setTimeout(()=>{
+                $http.get("/api/public/table/" + parameter).then(function(response){
+                    console.log(response);
+                    $rootScope.records = response.data;
+                    populateTable();
+                });
+            },1000);
         }
         else if(column !== null && parameter !== null){
             //Other column lookup
-            $http.get("/api/public/table/" + column + "=" + parameter).then(function(response){
-                console.log(response);
-                $rootScope.records = response.data;});
+            setTimeout(()=>{
+                $http.get("/api/public/table/" + column + "=" + parameter).then(function(response){
+                    console.log(response);
+                    $rootScope.records = response.data;
+                    populateTable();
+                });
+            },1000);
         }
         else{
             //Get the whole table
-            $http.get("/api/public/table/").then(function(response){
-                console.log(response);
-                $rootScope.records = response.data;});
+            setTimeout(()=>{
+                $http.get("/api/public/table/").then(function(response){
+                    console.log(response);
+                    $rootScope.records = response.data;
+                    populateTable();
+                });
+            },1000);
         }
+    }
 
-        $scope.populateTable();
-    };
+    //Load table data from server
+    function loadData(column = null, parameter = null){
+        return new Promise((resolve) => {
+            resolve(getData(column,parameter));
+        });
+    }
 
-    $scope.populateTable = function populateTable(){
-        //Populate Table
+    //Populate the Table
+    function populateTable(){
 
-        if($rootScope.records != null){
-            for($i = 1; $i < $rootScope.records.length; $i++) {
+        clearTable();
 
-                var $row = document.createElement('tr',label= "row" + $i);
-                var $cell = document.createElement('td');
-                $cell.innerHTML = $rootScope.records[$i].id;
-                $row.appendChild($cell);
-                $cell = document.createElement('td');
-                $cell.innerHTML = $rootScope.records[$i].firstname;
-                $row.appendChild($cell);
-                $cell = document.createElement('td');
-                $cell.innerHTML = $rootScope.records[$i].lastname;
-                $row.appendChild($cell);
-                $cell = document.createElement('td');
-                $cell.innerHTML = $rootScope.records[$i].email;
-                $row.appendChild($cell);
-                $cell = document.createElement('td');
-                $cell.innerHTML = "<button data-ng-click=edit(" + $rootScope.records[$i].id + ")>Edit</button>";
-                $row.appendChild($cell);
-                $cell = document.createElement('td');
-                $cell.innerHTML = "<button data-ng-click=del(" + $rootScope.records[$i].id + ")>Remove</button>";
-                $row.appendChild($cell);
+        let row,cell = null;
 
-                document.getElementById("Table").appendChild($row);
-            }
+        //Filling the table is dealt with by table.html. This returns an error if no data is returned.
+        if($rootScope.records == null) {
+            row = document.createElement('tr');
+            row.setAttribute("class","row");
+            cell = document.createElement('td');
+            cell.innerHTML = "No records found";
+            row.appendChild(cell);
+            document.getElementById("Table").appendChild(row);
         }
-    };
+    }
 
     //Reload the table after making changes
     $rootScope.$on('reloadTable',function(event){
-        $scope.clearTable();
-        $scope.loadData($scope.searchColumn,$scope.searchParameter);
+        loadData($scope.searchColumn,$scope.searchParameter);
     });
 
     //Delete all entries in the table (locally)
-    $scope.clearTable = function clearTable(){
+    function clearTable(){
         console.log("Clearing table");
-        $rows = document.getElementsByClassName("row");
-        for($i = $rows.length-1; $i >= 0; $i--){
-            $rows[$i].parentNode.removeChild($rows[$i])
+        let rows = document.getElementsByClassName("row");
+        for(let i = rows.length-1; i >= 0; i--){
+            rows[i].parentNode.removeChild(rows[i]);
         }
-    };
+    }
+
+
 
     ////Buttons
 
+    //Enter to search
     document.getElementById("searchInput").addEventListener("keyup",function(event){
         if(event.key === "Enter"){
             event.preventDefault();
@@ -108,6 +113,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     //Open edit window
     $scope.edit =
         function edit(idx, fn, ln, em) {
+            console.log("edit");
             $rootScope.$emit('openEditModal',idx, fn, ln, em);
         };
 
@@ -118,17 +124,15 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         };
 
     //Delete button
-    $scope.del =
-        function del(idx) {
-            console.log("Deleting id:" + (idx));
-            $http.delete("/api/public/table/" + (idx)).then(function(response){
-                console.log(response);
-                $rootScope.$emit('reloadTable');
-            })
-        };
-
+    $scope.del = function del(idx) {
+        console.log("Deleting id:" + (idx));
+        $http.delete("/api/public/table/" + (idx)).then(function(response){
+            console.log(response);
+            $rootScope.$emit('reloadTable');
+        })
+    };
 
     //When finished loading, load the table based on the URL.
-    $scope.loadData($routeParams.column,$routeParams.parameter);
+    loadData($routeParams.column,$routeParams.parameter);
 
 });
