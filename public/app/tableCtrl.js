@@ -76,7 +76,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
 
     //Reload the table after making changes
     $rootScope.$on('reloadTable',function(event){
-        loadData($scope.searchColumn,$scope.searchParameter);
+        loadData($routeParams.column,$routeParams.parameter);
     });
 
     //Delete all entries in the table (locally)
@@ -102,7 +102,13 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
 
     //Search button
     $scope.search = function search(){
-        $location.path("/app/" + $scope.searchColumn + "/" + $scope.searchParameter);
+        console.log("search:" + $scope.searchColumn + " for " + $scope.searchParameter);
+        if($scope.searchParameter === undefined){
+            $location.path("/app/");
+        }
+        else{
+            $location.path("/app/" + $scope.searchColumn + "/" + $scope.searchParameter);
+        }
     };
 
     //Clear button
