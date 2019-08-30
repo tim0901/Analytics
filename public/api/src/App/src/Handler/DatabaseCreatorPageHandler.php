@@ -19,8 +19,10 @@ use Zend\Expressive\Router;
 use Zend\Expressive\Template\TemplateRendererInterface;
 use Zend\Expressive\Twig\TwigRenderer;
 use Zend\Expressive\ZendView\ZendViewRenderer;
+use Zend\Json\Json;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use function Sodium\add;
 
 class DatabaseCreatorPageHandler implements RequestHandlerInterface
 {
@@ -44,64 +46,101 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
 
     }
 
-
     //Create database and tables.
     public function postAction(ServerRequestInterface $request, mysqli $connection){
 
-        $table = $request->getAttribute('desiredTable',null);
-        $date = $request->getAttribute('date',null);
-        $user = $request->getAttribute('user',null);
-        $affected_user = $request->getAttribute('affected_user',null);
-        $accessed = $request->getAttribute('accessed',null);
-        $type = $request->getAttribute('type',null);
-        $action = $request->getAttribute('action',null);
-        $description = $request->getAttribute('description',null);
-        $origin = $request->getAttribute('origin',null);
-        $ip = $request->getAttribute('ip',null);
+        //Create database
 
-        $sql = "INSERT INTO ".$table." (Date, User, Affected_User, Accessed, Type, Action, Description, Origin, IP) VALUES ('".$date."', '".$user."', '".$affected_user."', '".$accessed."', '".$type."', '".$action."', '".$description."', '".$origin."', '".$ip."')";
+        $sql = "CREATE DATABASE analytics_database";
+
+        $sql = "USE analytics_database";
+        $connection->query($sql);
+
+        //Create tables - definitions auto-generated from PHPStorm
+        $sql = "
+        create table if not exists modules_table
+        (
+            Module_ID   int auto_increment
+                primary key,
+            Module_Name varchar(100) null,
+            constraint modules_table_Module_Name_uindex
+                unique (Module_Name)
+        );";
+        $connection->query($sql);
+
+        $sql = "
+        create table if not exists accessed_table
+        (
+            Accessed_ID   int auto_increment
+                primary key,
+            Module_ID     int          null,
+            Accessed_Name varchar(100) null,
+            constraint accessed_table_Accessed_Name_uindex
+                unique (Accessed_Name),
+            constraint module_foreign_key_at
+                foreign key (Module_ID) references modules_table (Module_ID)
+                    on delete cascade
+        );";
+        $connection->query($sql);
+
+        $sql = "create table if not exists users_table
+        (
+            User_ID   int auto_increment
+                primary key,
+            User_Name varchar(100) null,
+            constraint users_table_User_Name_uindex
+                unique (User_Name)
+        );";
+        $connection->query($sql);
+
+
+        $sql = "create table if not exists event_table
+        (
+            Event_ID int auto_increment
+                primary key,
+            Date     datetime     null,
+            User     int          null,
+            Accessed int          null,
+            Type     varchar(30)  null,
+            Action   varchar(100) null,
+            constraint accessed_foreign_key
+                foreign key (Accessed) references accessed_table (Accessed_ID)
+                    on delete cascade,
+            constraint user_foreign_key
+                foreign key (User) references users_table (User_ID)
+                    on delete cascade
+        );";
 
         if ($connection->query($sql) === true){
+            $connection->close();
             return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
         }
         else{
+            $connection->close();
             return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
         }
     }
 
-    //Edit database/tables?
-    public function putAction(ServerRequestInterface $request, mysqli $connection){
-
-        $table = $request->getAttribute('desiredTable',null);
-        $event_id = $request->getAttribute('Event_ID');
-
-        for($i = 0; $i < 9; $i++){
-            $desiredColumn[$i] = $request->getAttribute('desiredColumn'.$i);
-            $desiredValue[$i] = $request->getAttribute('desiredValue'.$i);
-        }
-
-        $sql = "UPDATE ".$table." SET ".$desiredColumn[0]."='".$desiredValue[0]."', ".$desiredColumn[1]."='".$desiredValue[1] ."', ".$desiredColumn[2]."='".$desiredValue[2] ."', ".$desiredColumn[3]."='".$desiredValue[3] ."', ".$desiredColumn[4]."='".$desiredValue[4] ."', ".$desiredColumn[5]."='".$desiredValue[5] ."', ".$desiredColumn[6]."='".$desiredValue[6] ."', ".$desiredColumn[7]."='".$desiredValue[7] ."', ".$desiredColumn[8]."='".$desiredValue[8] ."' WHERE Event_ID = '".$event_id."'";
-
-        if($connection->query($sql) === true){
-            return new EmptyResponse(StatusCodeInterface::STATUS_OK);
-        }
-        else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
-        }
-    }
-
-    //drop database.
+    //Drop all table in database!!!
     public function deleteAction(ServerRequestInterface $request, mysqli $connection){
 
-        $table = $request->getAttribute('desiredTable',null);
-        $desiredValue = $request->getAttribute('desiredValue');
+        $sql = "DROP TABLE event_table";
+        $connection->query($sql);
 
-        $sql = "DELETE FROM ".$table." WHERE Event_ID = '".$desiredValue."'";
+        $sql = "DROP TABLE users_table";
+        $connection->query($sql);
+
+        $sql = "DROP TABLE accessed_table";
+        $connection->query($sql);
+
+        $sql = "DROP TABLE modules_table";
 
         if ($connection->query($sql) === true){
+            $connection->close();
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
+            $connection->close();
             return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
         }
 
@@ -115,16 +154,14 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
         $servername = "mysql";
         $username = "Alex";
         $pass ="password";
-        $databasename ="my_database";
+        $databasename ="analytics_database";
 
         //Create a connection
-        $connection = new mysqli($servername,$username,$pass,$databasename);
+        $connection = new mysqli($servername,$username,$pass, $databasename);
 
         switch ($request->getMethod()){
             case 'POST':
                 return $this->postAction($request,$connection);
-            case 'PUT':
-                return $this->putAction($request,$connection);
             case 'DELETE':
                 return $this->deleteAction($request,$connection);
 
@@ -134,3 +171,7 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
         }
     }
 }
+
+
+
+

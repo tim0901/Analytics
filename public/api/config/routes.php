@@ -40,21 +40,21 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     $app->get('/api/public/ping', App\Handler\PingHandler::class, 'api.ping');
 
     //Creating/deleting database
-    $app->route('api/public/createDatabase/',App\Handler\DatabaseCreatorPageHandler::class);
+    $app->route('/api/public/createDatabase/',App\Handler\DatabaseCreatorPageHandler::class);
 
     //Batch uploading/deleting
     $app->route('/api/public/batchUpload/{moduleName}/',App\Handler\BatchUploadPageHandler::class);
 
     //Accessing the table
 
-    $app->get('/api/public/{desiredTable}/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
-    $app->get('/api/public/{desiredTable}/[{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
+    $app->get('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
+    $app->get('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/[{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
 
-    $app->post('/api/public/{desiredTable}/date={date}&module={module}&user={user}&accessed={accessed}&type={type}&action={action}', App\Handler\DisplayTablePageHandler::class);
+    $app->post('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/date={date}&module={module}&user={user}&accessed={accessed}&type={type}&action={action}', App\Handler\DisplayTablePageHandler::class);
 
-    $app->patch('/api/public/{desiredTable}/{Event_ID:\d+}&{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}',App\Handler\DisplayTablePageHandler::class);
+    $app->patch('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/{Event_ID:\d+}&{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}',App\Handler\DisplayTablePageHandler::class);
 
-    $app->put('/api/public/{desiredTable}/{Event_ID:\d+}&{desiredColumn0}={desiredValue0}&{desiredColumn1}={desiredValue1}&{desiredColumn2}={desiredValue2}&{desiredColumn3}={desiredValue3}&{desiredColumn4}={desiredValue4}&{desiredColumn5}={desiredValue5}',App\Handler\DisplayTablePageHandler::class);
-    $app->delete('/api/public/{desiredTable}/{desiredValue:\d+}',App\Handler\DisplayTablePageHandler::class);
+    $app->put('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/{Event_ID:\d+}&{desiredColumn0}={desiredValue0}&{desiredColumn1}={desiredValue1}&{desiredColumn2}={desiredValue2}&{desiredColumn3}={desiredValue3}&{desiredColumn4}={desiredValue4}&{desiredColumn5}={desiredValue5}',App\Handler\DisplayTablePageHandler::class);
+    $app->delete('/api/public/{desiredTable:event_table|modules_table|users_table|accessed_table}/{desiredValue:\d+}',App\Handler\DisplayTablePageHandler::class);
 
 };

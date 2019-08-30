@@ -251,7 +251,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         $servername = "mysql";
         $username = "Alex";
         $pass ="password";
-        $databasename ="my_database";
+        $databasename ="analytics_database";
 
         //Create a connection
         $connection = new mysqli($servername,$username,$pass,$databasename);

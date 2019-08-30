@@ -11,6 +11,13 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
 
     $rootScope.selectedFile = document.getElementById("uploadFile");
 
+    function createDatabase(){
+        $http.post("api/public/createDatabase/").then(function(response){
+            console.log(response);
+            loadData("event_table",$routeParams.column,$routeParams.parameter);
+        })
+    }
+
     //GET requests
     function getData(table = "event_table", column = null, parameter = null){
         $rootScope.records = null;
@@ -166,6 +173,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     };
 
     //When finished loading, load the table based on the URL.
-    loadData("event_table",$routeParams.column,$routeParams.parameter);
+    createDatabase();
+    //loadData("event_table",$routeParams.column,$routeParams.parameter);
 
 });

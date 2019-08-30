@@ -39,6 +39,7 @@ class ConfigProvider
                 Handler\InfoPageHandler::class => Handler\InfoPageHandlerFactory::class,
                 Handler\DisplayTablePageHandler::class => Handler\DisplayTablePageHandlerFactory::class,
                 Handler\BatchUploadPageHandler::class => Handler\BatchUploadPageHandlerFactory::class,
+                Handler\DatabaseCreatorPageHandler::class => Handler\DatabaseCreatorPageHandlerFactory::class,
             ],
         ];
     }

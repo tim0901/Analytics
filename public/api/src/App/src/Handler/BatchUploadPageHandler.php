@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Handler;
 
 use Fig\Http\Message\StatusCodeInterface;
-use foo\bar;
-use http\Env\Request;
 use http\Env\Response;
 use mysqli;
-use phpDocumentor\Reflection\Types\String_;
 use phpDocumentor\Reflection\Types\This;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -67,14 +64,18 @@ class BatchUploadPageHandler implements RequestHandlerInterface
         $module_ID = $connection->query($sql)->fetch_row()[0];
 
         //Get a list of unique names in the data
+
+        //Init arrays
         $uniqueNames = array();
         $uniqueAccessed = array();
 
+        //Extract from dataset
         foreach($decodedData[0] as $d){
             $uniqueNames[] = $d[1];
             $uniqueAccessed[] = $d[3];
         }
 
+        //Eliminate duplicates
         $uniqueNames = array_unique($uniqueNames);
         $uniqueAccessed = array_unique($uniqueAccessed);
 
@@ -177,7 +178,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
         $servername = "mysql";
         $username = "Alex";
         $pass ="password";
-        $databasename ="my_database";
+        $databasename ="analytics_database";
 
         //Create a connection
         $connection = new mysqli($servername,$username,$pass,$databasename);
