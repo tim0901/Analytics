@@ -11,7 +11,7 @@ use Zend\Expressive\Template\TemplateRendererInterface;
 
 use function get_class;
 
-class HomePageHandlerFactory
+class DatabaseCreatorPageHandlerFactory
 {
     public function __invoke(ContainerInterface $container) : RequestHandlerInterface
     {
@@ -20,6 +20,6 @@ class HomePageHandlerFactory
             ? $container->get(TemplateRendererInterface::class)
             : null;
 
-        return new HomePageHandler(get_class($container), $router, $template);
+        return new DatabaseCreatorPageHandler(get_class($container), $router, $template);
     }
 }

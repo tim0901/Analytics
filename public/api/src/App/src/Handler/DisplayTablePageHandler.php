@@ -19,6 +19,7 @@ use Zend\Expressive\Router;
 use Zend\Expressive\Template\TemplateRendererInterface;
 use Zend\Expressive\Twig\TwigRenderer;
 use Zend\Expressive\ZendView\ZendViewRenderer;
+use Zend\Json\Json;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
@@ -46,7 +47,8 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     public function getAction(ServerRequestInterface $request, mysqli $connection){
 
-        $desiredColumn = $request->getAttribute('desiredColumn','id');
+        $desiredTable = $request->getAttribute('desiredTable', 'event_table');
+        $desiredColumn = $request->getAttribute('desiredColumn','Event_ID');
         $desiredValue = $request->getAttribute('desiredValue');
 
         //Check connection was successful
@@ -54,55 +56,112 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             $data['error'] = ("MySQL connection failed. " . $connection->connect_error);
         }
         else{
+            //Main table
+            if($desiredTable == "event_table"){
+                //Filter table for desired results, or show all
+                if($desiredValue !== null){
+                    if($desiredColumn !== "Event_ID"){
+                        $desiredValue = "%" . $desiredValue . "%";
+                    }
+                    $sql = "SELECT et.Event_ID, et.Date, md.Module_Name, et.User, et.Accessed, et.Type, et.Action FROM event_table AS et JOIN modules_table AS md ON et.Module = md.Module_ID JOIN users_table ut on et.User = ut.User_ID WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
 
-            //Filter table for desired results, or show all
-            if($desiredValue !== null){
-                if($desiredColumn !== "id"){
-                    $desiredValue = "%" . $desiredValue . "%";
+                    //$sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
                 }
-                $sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
-            }
-            else{
-                $sql = "SELECT id, firstname, lastname, email FROM my_table ";
-            }
-
-            $result = $connection->query($sql);
-
-            //Check there is data present
-            if($result->num_rows > 0){
-                //Table container to be passed to template
-                $t = null;
-                $i = 0;
-                $str = null;
-                //For each row in the table
-                while($row = $result->fetch_assoc()){
-
-                    $t[$i]['id'] = $row['id'];
-                    $t[$i]['firstname'] = $row["firstname"];
-                    $t[$i]['lastname'] = $row["lastname"];
-                    $t[$i]['email'] = $row["email"];
-                    $i++;
+                else{
+                    $sql = "SELECT et.Event_ID, et.Date, md.Module_Name, ut.User_Name, et.Accessed, et.Type, et.Action FROM event_table AS et JOIN modules_table AS md ON et.Module = md.Module_ID JOIN users_table ut on et.User = ut.User_ID";
                 }
 
-                $data = $t;
-                $connection->close();
-                return new JsonResponse($data);
+                $result = $connection->query($sql);
+
+                //Check there is data present
+                if($result->num_rows > 0){
+                    //Table container to be passed to template
+                    $t = null;
+                    $i = 0;
+                    //For each row in the table
+                    while($row = $result->fetch_assoc()){
+
+                        $t[$i]['Event_ID'] = $row['Event_ID'];
+                        $t[$i]['Date'] = $row['Date'];
+                        $t[$i]['Module'] = $row['Module_Name'];
+                        $t[$i]['User'] = $row['User_Name'];
+                        $t[$i]['Accessed'] = $row['Accessed'];
+                        $t[$i]['Type'] = $row['Type'];
+                        $t[$i]['Action'] = $row['Action'];
+                        $i++;
+                    }
+
+                    $data = $t;
+                    $connection->close();
+                    return new JsonResponse($data);
+                }
+                else{
+                    $connection->close();
+                    $data = null;
+                    return new JsonResponse($data);
+                }
             }
             else{
-                $connection->close();
-                $data = null;
-                return new JsonResponse($data);
+                $sql = "SELECT * FROM " . $desiredTable;
+                $result = $connection->query($sql);
+
+                if($result->num_rows > 0){
+                    //Table container to be passed to template
+                    $t = null;
+                    $i = 0;
+                    //For each row in the table
+                    while($row = $result->fetch_assoc()){
+                        if($desiredTable == "modules_table"){
+                            //Return list of modules
+                            $t[$i]['Module_ID'] = $row['Module_ID'];
+                            $t[$i]['Module_Name'] = $row['Module_Name'];
+                            $i++;
+                        }
+                        else if($desiredTable == "modules_table"){
+                            //Return list of users (hashed)
+                            $t[$i]['User_ID'] = $row['User_ID'];
+                            $t[$i]['User_Name'] = $row['User_Name'];
+                            $i++;
+                        }
+                        else{
+                            //404 table not found
+                            $connection->close();
+                            $data = null;
+                            return new JsonResponse($data);
+                        }
+                    }
+
+                    $data = $t;
+                    $connection->close();
+                    return new JsonResponse($data);
+                }
+                else{
+                    $connection->close();
+                    $data = null;
+                    return new JsonResponse($data);
+                }
             }
+
         }
+        //This is here to stop PHPStorm from complaining that there isn't a return statement. It should never be reached.
+        return new EmptyResponse(StatusCodeInterface::STATUS_NOT_FOUND);
     }
 
     public function postAction(ServerRequestInterface $request, mysqli $connection){
 
-        $firstname = $request->getAttribute('firstname',null);
-        $lastname = $request->getAttribute('lastname',null);
-        $email = $request->getAttribute('email',null);
+        $table = $request->getAttribute('desiredTable',null);
+        $date = $request->getAttribute('date',null);
+        $module = $request->getAttribute('module',null);
+        $user = $request->getAttribute('user',null);
+        $accessed = $request->getAttribute('accessed',null);
+        $type = $request->getAttribute('type',null);
+        $action = $request->getAttribute('action',null);
 
-        $sql = "INSERT INTO my_table (firstname, lastname, email) VALUES ('".$firstname."', '".$lastname."', '".$email."')";
+        //Fetch the Module_ID for the module, which is the foreign key used in event_table.
+        $sql = "SELECT Module_ID FROM modules_table WHERE Module_Name = '". $module ."'";
+        $module_ID = $connection->query($sql)->fetch_row()[0];
+
+        $sql = "INSERT INTO ".$table." (Date, Module, User, Accessed, Type, Action) VALUES ('".$date."', '".$module_ID."', '".$user."', '".$accessed."', '".$type."', '".$action."')";
 
         if ($connection->query($sql) === true){
             return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
@@ -114,11 +173,12 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     public function patchAction(ServerRequestInterface $request, mysqli $connection){
 
-        $id = $request->getAttribute('id');
+        $table = $request->getAttribute('desiredTable',null);
+        $id = $request->getAttribute('Event_ID');
         $desiredColumn = $request->getAttribute('desiredColumn');
         $desiredValue = $request->getAttribute('desiredValue');
 
-        $sql = "UPDATE my_table SET ".$desiredColumn."='".$desiredValue."' WHERE id = '".$id."'";
+        $sql = "UPDATE ".$table." SET ".$desiredColumn."='".$desiredValue."' WHERE Event_ID = '".$id."'";
 
         if($connection->query($sql) === true){
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
@@ -126,18 +186,19 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         else{
             return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
         }
-
     }
 
     public function putAction(ServerRequestInterface $request, mysqli $connection){
-        $id = $request->getAttribute('id');
-        for($i = 0; $i < 3; $i++){
 
+        $table = $request->getAttribute('desiredTable',null);
+        $event_id = $request->getAttribute('Event_ID');
+
+        for($i = 0; $i < 6; $i++){
             $desiredColumn[$i] = $request->getAttribute('desiredColumn'.$i);
             $desiredValue[$i] = $request->getAttribute('desiredValue'.$i);
         }
 
-        $sql = "UPDATE my_table SET ".$desiredColumn[0]."='".$desiredValue[0]."', ".$desiredColumn[1]."='".$desiredValue[1] ."', ".$desiredColumn[2]."='".$desiredValue[2] ."' WHERE id = '".$id."'";
+        $sql = "UPDATE ".$table." SET ".$desiredColumn[0]."='".$desiredValue[0]."', ".$desiredColumn[1]."='".$desiredValue[1] ."', ".$desiredColumn[2]."='".$desiredValue[2] ."', ".$desiredColumn[3]."='".$desiredValue[3] ."', ".$desiredColumn[4]."='".$desiredValue[4] ."', ".$desiredColumn[5]."='".$desiredValue[5] ."' WHERE Event_ID = '".$event_id."'";
 
         if($connection->query($sql) === true){
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
@@ -149,9 +210,10 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     public function deleteAction(ServerRequestInterface $request, mysqli $connection){
 
+        $table = $request->getAttribute('desiredTable',null);
         $desiredValue = $request->getAttribute('desiredValue');
 
-        $sql = "DELETE FROM my_table WHERE id = '".$desiredValue."'";
+        $sql = "DELETE FROM ".$table." WHERE Event_ID = '".$desiredValue."'";
 
         if ($connection->query($sql) === true){
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);

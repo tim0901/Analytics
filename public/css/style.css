@@ -27,7 +27,7 @@ table th:last-child{
 }
 
 /* The Modal (background) */
-.modal, .createModal {
+.modal, .createModal, .uploadModal, .deleteModuleModal {
     /*display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -41,7 +41,7 @@ table th:last-child{
 }
 
 /* Modal Content/Box */
-.modal-content, .create-modal-content {
+.modal-content, .create-modal-content, .upload-modal-content, .deleteModule-modal-content {
     background-color: #fefefe;
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;

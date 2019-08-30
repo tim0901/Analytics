@@ -34,13 +34,27 @@ use Zend\Expressive\MiddlewareFactory;
  */
 
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container) : void {
-    $app->get('/api/public/', App\Handler\HomePageHandler::class, 'home');
+
+    //Default/Legacy routing. Info can probably be deleted.
     $app->get('/api/public/info',App\Handler\InfoPageHandler::class);
     $app->get('/api/public/ping', App\Handler\PingHandler::class, 'api.ping');
-    $app->get('/api/public/table/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
-    $app->get('/api/public/table/[{desiredColumn:firstname|lastname|email}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
-    $app->post('/api/public/table/firstname={firstname}&lastname={lastname}&email=[{email}]', App\Handler\DisplayTablePageHandler::class);
-    $app->patch('/api/public/table/{id:\d+}&{desiredColumn:firstname|lastname|email}={desiredValue}',App\Handler\DisplayTablePageHandler::class);
-    $app->put('/api/public/table/{id:\d+}&{desiredColumn0}={desiredValue0}&{desiredColumn1}={desiredValue1}&{desiredColumn2}={desiredValue2}',App\Handler\DisplayTablePageHandler::class);
-    $app->delete('/api/public/table/{desiredValue:\d+}',App\Handler\DisplayTablePageHandler::class);
+
+    //Creating/deleting database
+    $app->route('api/public/createDatabase/',App\Handler\DatabaseCreatorPageHandler::class);
+
+    //Batch uploading/deleting
+    $app->route('/api/public/batchUpload/{moduleName}/',App\Handler\BatchUploadPageHandler::class);
+
+    //Accessing the table
+
+    $app->get('/api/public/{desiredTable}/{desiredValue:\d+}', App\Handler\DisplayTablePageHandler::class);
+    $app->get('/api/public/{desiredTable}/[{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}]', App\Handler\DisplayTablePageHandler::class);
+
+    $app->post('/api/public/{desiredTable}/date={date}&module={module}&user={user}&accessed={accessed}&type={type}&action={action}', App\Handler\DisplayTablePageHandler::class);
+
+    $app->patch('/api/public/{desiredTable}/{Event_ID:\d+}&{desiredColumn:Event_ID|Date|Module|User|Accessed|Type|Action}={desiredValue}',App\Handler\DisplayTablePageHandler::class);
+
+    $app->put('/api/public/{desiredTable}/{Event_ID:\d+}&{desiredColumn0}={desiredValue0}&{desiredColumn1}={desiredValue1}&{desiredColumn2}={desiredValue2}&{desiredColumn3}={desiredValue3}&{desiredColumn4}={desiredValue4}&{desiredColumn5}={desiredValue5}',App\Handler\DisplayTablePageHandler::class);
+    $app->delete('/api/public/{desiredTable}/{desiredValue:\d+}',App\Handler\DisplayTablePageHandler::class);
+
 };

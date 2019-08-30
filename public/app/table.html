@@ -11,25 +11,35 @@
         <div>
             <table id="Table">
                 <tr class="tableHeader">
-                    <th>Id</th>
-                    <th>First name</th>
-                    <th>Last name</th>
-                    <th>Email</th>
+                    <th>Event ID</th>
+                    <th>Date</th>
+                    <th>Module</th>
+                    <th>User</th>
+                    <th>Accessed</th>
+                    <th>Type</th>
+                    <th>Action</th>
                     <th></th>
                 </tr>
                 <tr ng-repeat="x in records" class="row">
-                    <td>{{x.id}}</td>
-                    <td>{{x.firstname}}</td>
-                    <td>{{x.lastname}}</td>
-                    <td>{{x.email}}</td>
-                    <td><button data-ng-click="edit(x.id, x.firstname, x.lastname, x.email)">Edit</button></td>
-                    <td><button data-ng-click="del(x.id)">Remove</button></td>
+                    <td>{{x.Event_ID}}</td>
+                    <td>{{x.Date}}</td>
+                    <td>{{x.Module}}</td>
+                    <td>{{x.User}}</td>
+                    <td>{{x.Accessed}}</td>
+                    <td>{{x.Type}}</td>
+                    <td>{{x.Action}}</td>
+                    <td><button data-ng-click="edit(x.Event_ID, x.Date, x.Module, x.User, x.Accessed, x.Type, x.Action)">Edit</button></td>
+                    <td><button data-ng-click="del(x.Event_ID)">Remove</button></td>
                 </tr>
 
             </table>
             <button data-ng-click="crea()">New</button>
             <p></p>
             <select ng-model="searchColumn" ng-options="x for x in columns"></select> <input id="searchInput" type="text" ng-model="searchParameter"> <button id="searchButton" data-ng-click="search()">Search</button> <button data-ng-click="clear()">Clear Search</button>
+            <p></p>
+            <p></p>
+            <button id="uploadButton" data-ng-click="uploadBtn()">Upload</button>
+            <button id="deleteModuleButton" data-ng-click="deleteModuleBtn()">Remove Module</button>
         </div>
     </div>
 
@@ -49,10 +59,13 @@
             <!-- Modal content -->
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <input type="text" ng-model="id" readonly>
-                <input type="text" ng-model="firstname">
-                <input type="text" ng-model="lastname">
-                <input type="text" ng-model="email">
+                Event ID <input type="text" ng-model="event_id" readonly>
+                Date <input type="text" ng-model="date">
+                Module <input type="text" ng-model="module">
+                User <input type="text" ng-model="user">
+                Accessed <input type="text" ng-model="accessed">
+                Type <input type="text" ng-model="type">
+                Action <input type="text" ng-model="action">
                 <button data-ng-click="submit()">Apply</button>
             </div>
         </div>
@@ -65,13 +78,47 @@
             <!-- Modal content -->
             <div class="create-modal-content">
                 <span class="close">&times;</span>
-                <input type="text" ng-model="newfirstname">
-                <input type="text" ng-model="newlastname">
-                <input type="text" ng-model="newemail">
+                Date <input type="text" ng-model="newDate">
+                Module <input type="text" ng-model="newModule">
+                User <input type="text" ng-model="newUser">
+                Accessed <input type="text" ng-model="newAccessed">
+                Type <input type="text" ng-model="newType">
+                Action <input type="text" ng-model="newAction">
                 <button data-ng-click="create()">Create</button>
             </div>
 
         </div>
     </div>
 
+    <!-- Upload Modal -->
+    <div ng-show="openUploadModal" class="ng-hide">
+        <div id="uploadModal" class="modal">
+
+            <!-- Modal content -->
+            <div class="upload-modal-content">
+                <span class="close">&times;</span>
+                Module name <input type="text" ng-model="newModule">
+                <p></p>
+                <input type="file" id="uploadFile">
+                <button data-ng-click="upload()">Upload</button>
+                <p ng-show="uploading" class="ng-hide">Uploading file, this may take a while. This message will close on completion.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Delete module Modal -->
+    <div ng-show="openDeleteModuleModal" class="ng-hide">
+        <div id="deleteModuleModal" class="modal">
+
+            <!-- Modal content -->
+            <div class="deleteModule-modal-content">
+                <span class="close">&times;</span>
+                Module <select ng-model="moduleToDelete" ng-options="x for x in modulesList"></select>
+                <p></p>
+                <button data-ng-click="deleteModule(moduleToDelete)">Delete</button>
+            </div>
+
+        </div>
+    </div>
 </div>

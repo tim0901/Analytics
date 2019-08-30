@@ -2,16 +2,21 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
 
     $scope.openCreateModal = false;
     $scope.openEditModal = false;
+    $scope.openUploadModal = false;
+    $scope.openDeleteModuleModal = false;
 
     // Get the <span> element that closes the modal
     var span = document.getElementsByClassName("close")[0];
 
     //Open the modal when the edit button is pressed
-    $rootScope.$on('openEditModal',function(event, idx, fn, ln, em){
-        $scope.id = idx;
-        $scope.firstname = fn;
-        $scope.lastname = ln;
-        $scope.email = em;
+    $rootScope.$on('openEditModal',function(event, eid, da, md, us, acc, ty, act){
+        $scope.event_id = eid;
+        $scope.date = da;
+        $scope.module = md;
+        $scope.user = us;
+        $scope.accessed = acc;
+        $scope.type = ty;
+        $scope.action = act;
         //Aaand open
         $scope.openEditModal = true;
 
@@ -20,15 +25,29 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
     //Look for event in rootscope, then open modal
     $rootScope.$on('openCreateModal',function(event){
 
-        $scope.newfirstname = null;
-        $scope.newlastname = null;
-        $scope.newemail = null;
+        $scope.newDate = null;
+        $scope.newModule = null;
+        $scope.newUser = null;
+        $scope.newAccessed = null;
+        $scope.newType = null;
+        $scope.newAction = null;
+
         $scope.openCreateModal = true;
+    });
+
+    $rootScope.$on('openDeleteModuleModal',function(event){
+        $scope.openDeleteModuleModal = true;
+    });
+
+    $rootScope.$on('openUploadModal',function(event){
+        $scope.newModule = null;
+        $scope.openUploadModal = true;
     });
 
     //Send put request to database
     $scope.submit = function submit(){
-        $http.put("/api/public/table/" + $scope.id + "&firstname=" + $scope.firstname + "&lastname=" + $scope.lastname + "&email=" + $scope.email)
+        console.log("/api/public/"+ $rootScope.currentTable + "/" + $scope.event_id + "&Date=" + $scope.date + "&Module=" + $scope.module + "&User=" + $scope.user + "&Accessed=" + $scope.accessed + "&Type=" + $scope.type + "&Action=" + $scope.action);
+        $http.put("/api/public/"+ $rootScope.currentTable + "/" + $scope.event_id + "&Date=" + $scope.date + "&Module=" + $scope.module + "&User=" + $scope.user + "&Accessed=" + $scope.accessed + "&Type=" + $scope.type + "&Action=" + $scope.action)
             .then(function (response){
                 console.log(response);
                 $scope.openEditModal = false;
@@ -38,7 +57,7 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
 
     //Send post request to database
     $scope.create = function create(){
-        $http.post("/api/public/table/" + "firstname=" + $scope.newfirstname + "&lastname=" + $scope.newlastname + "&email=" + $scope.newemail)
+        $http.post("/api/public/"+ $rootScope.currentTable + "/" + "date=" + $scope.newDate + "&module=" + $scope.newModule + "&user=" + $scope.newUser + "&accessed=" + $scope.newAccessed + "&type=" + $scope.newType + "&action=" + $scope.newAction)
             .then(function (response){
                 console.log(response);
                 $scope.openCreateModal = false;
@@ -46,10 +65,46 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
             })
     };
 
+    //Delete all entries for a given module in the database
+    $scope.deleteModule = function deleteModule(moduleToDelete){
+        $http.delete("/api/public/batchUpload/" + moduleToDelete + "/")
+            .then(function (response){
+                console.log(response);
+                $rootScope.modulesList = $rootScope.modulesList.filter(mod => mod !== moduleToDelete); //Filter the module that has been removed from the array of modules
+                $scope.deletingModule = false;
+                $scope.openDeleteModuleModal = false;
+                $rootScope.$emit('reloadTable');
+            });
+    };
+
+
+    //Upload file
+    $scope.upload = function upload(){
+        var reader = new FileReader();
+
+        reader.onload = (function(theFile){
+            return function (e) {
+                $scope.uploading = true;
+                $rootScope.modulesList.push($scope.newModule);
+                $http.post("/api/public/batchUpload/" + $scope.newModule + "/", e.target.result)
+                    .then(function (response){
+                        console.log(response);
+                        $scope.uploading = false;
+                        $scope.openUploadModal = false;
+                        $rootScope.$emit('reloadTable');
+                    });
+            };
+        })($rootScope.selectedFile.files[0]);
+
+        reader.readAsText($rootScope.selectedFile.files[0]);
+    };
+
     // Clicking on <span> (x) closes the modal
     span.onclick = function() {
         $scope.openEditModal = false;
         $scope.openCreateModal = false;
+        $scope.openUploadModal = false;
+        $scope.openDeleteModuleModal = false;
         $scope.$digest();
     };
 
@@ -59,8 +114,16 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
             $scope.openEditModal = false;
             $scope.$digest();
         }
-        if(event.target=== document.getElementById("createModal")){
+        else if(event.target=== document.getElementById("deleteModuleModal")){
+            $scope.openDeleteModuleModal = false;
+            $scope.$digest();
+        }
+        else if(event.target=== document.getElementById("createModal")){
             $scope.openCreateModal = false;
+            $scope.$digest();
+        }
+        else if(event.target=== document.getElementById("uploadModal")){
+            $scope.openUploadModal = false;
             $scope.$digest();
         }
     };
