@@ -63,12 +63,21 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                     if($desiredColumn !== "Event_ID"){
                         $desiredValue = "%" . $desiredValue . "%";
                     }
-                    $sql = "SELECT et.Event_ID, et.Date, md.Module_Name, et.User, et.Accessed, et.Type, et.Action FROM event_table AS et JOIN modules_table AS md ON et.Module = md.Module_ID JOIN users_table ut on et.User = ut.User_ID WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
+                    $sql = "SELECT et.Event_ID, et.Date, mt.Module_Name, et.User, at.Accessed_Name, et.Type, et.Action 
+                            FROM event_table AS et 
+                            JOIN accessed_table AS at ON et.Accessed = at.Accessed_ID 
+                            JOIN modules_table AS mt on at.Module_ID = mt.Module_ID
+                            JOIN users_table ut on et.User = ut.User_ID 
+                            WHERE ".$desiredColumn." LIKE '".$desiredValue."'";
 
                     //$sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
                 }
                 else{
-                    $sql = "SELECT et.Event_ID, et.Date, md.Module_Name, ut.User_Name, et.Accessed, et.Type, et.Action FROM event_table AS et JOIN modules_table AS md ON et.Module = md.Module_ID JOIN users_table ut on et.User = ut.User_ID";
+                    $sql = "SELECT et.Event_ID, et.Date, mt.Module_Name, ut.User_Name, at.Accessed_Name, et.Type, et.Action 
+                            FROM event_table AS et 
+                            JOIN accessed_table AS at ON et.Accessed = at.Accessed_ID 
+                            JOIN modules_table AS mt on at.Module_ID = mt.Module_ID 
+                            JOIN users_table ut on et.User = ut.User_ID";
                 }
 
                 $result = $connection->query($sql);
@@ -85,7 +94,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                         $t[$i]['Date'] = $row['Date'];
                         $t[$i]['Module'] = $row['Module_Name'];
                         $t[$i]['User'] = $row['User_Name'];
-                        $t[$i]['Accessed'] = $row['Accessed'];
+                        $t[$i]['Accessed'] = $row['Accessed_Name'];
                         $t[$i]['Type'] = $row['Type'];
                         $t[$i]['Action'] = $row['Action'];
                         $i++;
@@ -102,7 +111,13 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                 }
             }
             else{
-                $sql = "SELECT * FROM " . $desiredTable;
+                if($desiredValue !== null){
+                    $sql = "SELECT * FROM " . $desiredTable . " WHERE ".$desiredColumn." LIKE '".$desiredValue."'";
+                }
+                else{
+                    $sql = "SELECT * FROM " . $desiredTable;
+                }
+
                 $result = $connection->query($sql);
 
                 if($result->num_rows > 0){
@@ -122,6 +137,10 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                             $t[$i]['User_ID'] = $row['User_ID'];
                             $t[$i]['User_Name'] = $row['User_Name'];
                             $i++;
+                        }
+                        else if($desiredTable == "accessed_table"){
+                            $t[$i]['Accessed_ID'] = $row['Accessed_ID'];
+                            $t[$i]['Accessed_Name'] = $row['Accessed_Name'];
                         }
                         else{
                             //404 table not found

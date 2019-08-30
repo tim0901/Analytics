@@ -49,31 +49,14 @@ class BatchUploadPageHandler implements RequestHandlerInterface
     }
 
     //Insert unique users into users_table for more efficient upload
-    public function insertUsers(mysqli $connection, array $decodedData){
+    public function insertUniques(ServerRequestInterface $request, mysqli $connection){
 
-        //Get a list of unique names in the data
-        $uniqueNames = array();
-        foreach($decodedData[0] as $d){
-            $uniqueNames[] = $d[1];
-        }
-        $uniqueNames = array_unique($uniqueNames);
-
-        //Now hash the names
-        foreach ($uniqueNames as &$u) {
-            $u = sha1($u);
-        }
-
-        //Now insert them into users_table
-        $sql = "INSERT INTO users_table (User_Name) VALUES (" . $uniqueNames .")";
-        $connection->query($sql);
-    }
-
-    //Batch upload
-    public function postAction(ServerRequestInterface $request, mysqli $connection){
-
-        $moduleName = $request->getAttribute('moduleName');
+        //Process JSON payload
         $data = $request->getBody()->__toString(); //This is the uploaded file in String format
-        $decodedData = @json_decode($data);//This is the file in JSON
+        $decodedData = @json_decode($data);//This is the file in an array
+
+        //Fetch module name from URL
+        $moduleName = $request->getAttribute('moduleName');
 
         //Insert module into modules_table
         $sql = "INSERT INTO modules_table (Module_Name) VALUES ('".$moduleName ."')";
@@ -83,16 +66,46 @@ class BatchUploadPageHandler implements RequestHandlerInterface
         $sql = "SELECT Module_ID FROM modules_table WHERE Module_Name = '". $moduleName ."'";
         $module_ID = $connection->query($sql)->fetch_row()[0];
 
+        //Get a list of unique names in the data
+        $uniqueNames = array();
+        $uniqueAccessed = array();
+
+        foreach($decodedData[0] as $d){
+            $uniqueNames[] = $d[1];
+            $uniqueAccessed[] = $d[3];
+        }
+
+        $uniqueNames = array_unique($uniqueNames);
+        $uniqueAccessed = array_unique($uniqueAccessed);
+
+        //Now hash the names
+        foreach ($uniqueNames as &$u) {
+            $u = sha1($u);
+        }
+
+        //Now insert them into the corresponding tables
+        $sql = "INSERT INTO users_table (User_Name) VALUES ( '" . implode("'),('", $uniqueNames) . "')";
+        $connection->query($sql);
+        $sql = "INSERT INTO accessed_table (Module_ID, Accessed_Name) VALUES ( '" . $module_ID . "' , '" . implode("'),('" . $module_ID . "','", $uniqueAccessed) ."' )";
+        $connection->query($sql);
+
+        return $decodedData;
+    }
+
+
+    //Batch upload
+    public function postAction(ServerRequestInterface $request, mysqli $connection){
+
         //Couldn't get JSON_TABLE insertion to work
         //$sql = "INSERT INTO event_table (Date,User,Affected_User,Accessed,Type,Action,Description,Origin,IP) SELECT * FROM JSON_TABLE (" . $decodedData . ", '$[0]' COLUMNS( Date VARCHAR(30) PATH '$.[0]',User VARCHAR(10) PATH '$.[1]', Affected_User VARCHAR(100) PATH '$.[2]', Accessed VARCHAR(100) PATH '$.[3]', Type VARCHAR(30) PATH '$.[4]', Action VARCHAR(100) PATH '$.[5]', Description VARCHAR(200) PATH '$.[6]',Origin VARCHAR(10) PATH '$.[7]', IP VARCHAR(20) PATH '$.[8]')) AS jt1";
 
-        $this->insertUsers($connection, $decodedData);
+        //Decode payload and insert unique elements into their respective tables
+        $decodedData =  $this->insertUniques($request, $connection);
 
         //Insert the events into event_table
-        $sql = "INSERT INTO event_table (Date, Module, User, Accessed, Type, Action) VALUES ";
+        $sql = "INSERT INTO event_table (Date, User, Accessed, Type, Action) VALUES ";
 
         for($i = 0; $i < sizeof($decodedData[0]); $i++){
-
             //Filter out automated system statements.
             if($decodedData[0][$i][1] == 'Moodle Support' || $decodedData[0][$i][1] == '-'){
                 //SKIP ME
@@ -105,7 +118,18 @@ class BatchUploadPageHandler implements RequestHandlerInterface
                 $userQuery = "SELECT User_ID FROM users_table WHERE User_Name = '". $user_hash ."'";
                 $user_ID = $connection->query($userQuery)->fetch_row()[0];
 
+                //Fetch the Accessed_ID that corresponds to the accessed column.
+                $accessedQuery = "SELECT Accessed_ID FROM accessed_table WHERE Accessed_Name = '". $decodedData[0][$i][3] ."'";
+                $accessed_ID = $connection->query($accessedQuery)->fetch_row()[0];
+
                 //Convert the date to the correct format
+
+                //Moodle doesn't output dates in a reliable format. The 'days' part may only have one digit. If this is the case, we need to append a 0.
+                if(strlen($decodedData[0][$i][0]) !== 15){
+                    $decodedData[0][$i][0] = "0" . $decodedData[0][$i][0];
+                }
+
+                //Now rearrange the date into the correct format for MySQL
                 $transformedDate = "20" . substr($decodedData[0][$i][0],6,2) . "/" . substr($decodedData[0][$i][0],3,2) . "/" . substr($decodedData[0][$i][0],0,2) . " ". substr($decodedData[0][$i][0],10,5);
 
                 //If this isn't the first element of the query, add a comma.
@@ -113,7 +137,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
                     $sql = $sql . ",";
                 }
                 //Add element to query
-                $sql = $sql . "('".addslashes($transformedDate)."','".$module_ID."','" .$user_ID."','".addslashes($decodedData[0][$i][3])."','".addslashes($decodedData[0][$i][4])."','".addslashes($decodedData[0][$i][5])."')";
+                $sql = $sql . "('".addslashes($transformedDate)."','".$user_ID."','".$accessed_ID."','".addslashes($decodedData[0][$i][4])."','".addslashes($decodedData[0][$i][5])."')";
 
             }
         }
