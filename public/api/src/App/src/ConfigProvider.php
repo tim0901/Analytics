@@ -40,6 +40,7 @@ class ConfigProvider
                 Handler\DisplayTablePageHandler::class => Handler\DisplayTablePageHandlerFactory::class,
                 Handler\BatchUploadPageHandler::class => Handler\BatchUploadPageHandlerFactory::class,
                 Handler\DatabaseCreatorPageHandler::class => Handler\DatabaseCreatorPageHandlerFactory::class,
+                Handler\GraphPageHandler::class => Handler\GraphPageHandlerFactory::class,
             ],
         ];
     }

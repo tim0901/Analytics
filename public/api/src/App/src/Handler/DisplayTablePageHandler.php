@@ -63,21 +63,21 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                     if($desiredColumn !== "Event_ID"){
                         $desiredValue = "%" . $desiredValue . "%";
                     }
-                    $sql = "SELECT et.Event_ID, et.Date, mt.Module_Name, et.User, at.Accessed_Name, et.Type, et.Action 
+                    $sql = "SELECT et.Event_ID, et.Date, mt.Module_Name, ut.User_Name, at.Accessed_Name, et.Type, et.Action 
                             FROM event_table AS et 
                             JOIN accessed_table AS at ON et.Accessed = at.Accessed_ID 
                             JOIN modules_table AS mt on at.Module_ID = mt.Module_ID
                             JOIN users_table ut on et.User = ut.User_ID 
-                            WHERE ".$desiredColumn." LIKE '".$desiredValue."'";
-
-                    //$sql = "SELECT id, firstname, lastname, email FROM my_table WHERE ".$desiredColumn." LIKE'".$desiredValue."'";
+                            WHERE ".$desiredColumn." LIKE '".$desiredValue."'
+                            ORDER BY et.Date DESC";
                 }
                 else{
                     $sql = "SELECT et.Event_ID, et.Date, mt.Module_Name, ut.User_Name, at.Accessed_Name, et.Type, et.Action 
                             FROM event_table AS et 
                             JOIN accessed_table AS at ON et.Accessed = at.Accessed_ID 
-                            JOIN modules_table AS mt on at.Module_ID = mt.Module_ID 
-                            JOIN users_table ut on et.User = ut.User_ID";
+                            JOIN modules_table AS mt on at.Module_ID = mt.Module_ID
+                            JOIN users_table ut on et.User = ut.User_ID 
+                            ORDER BY et.Date DESC";
                 }
 
                 $result = $connection->query($sql);

@@ -6,7 +6,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     $rootScope.currentTable = "event_table";
 
     //Columns for drop down list
-    $scope.columns = ["event_id","Date","Module","User","Accessed","Type","Action"];
+    $scope.columns = ["Event_ID","Date","Module","User","Accessed","Type","Action"];
     $rootScope.modulesList = [];
 
     $rootScope.selectedFile = document.getElementById("uploadFile");
@@ -115,7 +115,6 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     }
 
 
-
     ////Buttons
 
     //Enter to search
@@ -133,12 +132,14 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
             $location.path("/app/");
         }
         else{
+            $rootScope.firstOpen = false;
             $location.path("/app/" + $scope.searchColumn + "/" + $scope.searchParameter);
         }
     };
 
     //Clear button
     $scope.clear = function clear(){
+        $rootScope.firstOpen = false;
         $location.path("/app/");
     };
 
@@ -172,8 +173,12 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         })
     };
 
-    //When finished loading, load the table based on the URL.
-    createDatabase();
+    //When finished loading, load the table based on the URL, if this is the first session.
+    if(!$rootScope.firstOpen){
+        $rootScope.firstOpen = true;
+        createDatabase();
+    }
+    //createDatabase();
     //loadData("event_table",$routeParams.column,$routeParams.parameter);
 
 });
