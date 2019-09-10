@@ -13,7 +13,134 @@
 <link rel="stylesheet" href="css/pageStyle.css"/>
 <link rel="stylesheet" href="css/modalStyle.css"/>
 <link rel="stylesheet" href="css/tableStyle.css"/>
+<script src="https://d3js.org/d3.v5.min.js"></script>
 
+<script>
+
+    function updateViz(newURL){
+
+        if(newURL != null){
+
+            var margin = {top: 20, right: 40, bottom: 30, left: 50},
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
+
+            // parse the date / time
+            var parseTime = d3.timeParse("%Y-%m-%d");
+
+            // Get the data
+            //d3.json("/api/public/graph/&Accessed=Homework&Accessed=Solution&undefined=undefined&undefined=undefined&undefined=undefined")
+            d3.json(newURL)
+                .then(function(data){
+                    console.log("D3");
+
+                    // format the data
+                    data.forEach((d) => {
+                        d.date = parseTime(d.date);
+                        d.events = +d.events;
+                    });
+
+                    var sumStat = d3.nest()
+                        .key(function(d){return d.type;})
+                        .entries(data);
+
+                    // set the ranges and domains of the data
+                    var x = d3.scaleLinear()
+                        .range([0, width])
+                        .domain(d3.extent(data, d => d.date));
+                    var y = d3.scaleLinear()
+                        .range([height, 0])
+                        .domain([0, d3.max(data, d => Math.max(d.events))]);
+
+
+                    // color palette
+                    var keys = sumStat.map(function(d){ return d.key });
+                    var color = d3.scaleOrdinal(d3.schemeCategory10)
+                        .domain(keys);
+
+
+                    // append the svg object to the body of the page
+                    // appends a 'group' element to 'svg'
+                    // moves the 'group' element to the top left margin
+                    var svg = d3.select('#graph')
+                        .selectAll("*").remove();
+
+                    svg = d3.select("#graph")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                    // Draw the line
+                    svg.selectAll(".line")
+                        .data(sumStat)
+                        .enter()
+                        .append("path")
+                        .attr("fill", "none")
+                        .attr("stroke", function(d){ return color(d.key) })
+                        .attr("stroke-width", 1.5)
+                        .attr("d", function(d){
+                            return d3.line()
+                                .x(function(d) { return x(d.date); })
+                                .y(function(d) { return y(d.events); })
+                                (d.values)
+                        });
+
+                    // Add the X Axis
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x)
+                            .tickFormat(d3.timeFormat("%m/%d")));
+
+                    // Add the Y Axis
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .attr("class", "axisSteelBlue")
+                        .call(d3.axisLeft(y));
+
+                    // text label for the y axis
+                    svg.append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 0 - margin.left)
+                        .attr("x",0 - (height / 2))
+                        .attr("dy", "1em")
+                        .style("text-anchor", "middle")
+                        .text("Events per day");
+
+
+                    // add legend
+                    var legend = svg.append("g")
+                        .attr("class", "legend")
+                        .attr("height", 100)
+                        .attr("width", 100)
+                        .attr('transform', 'translate(-20,50)');
+
+                    svg.selectAll("mydots")
+                        .data(keys)
+                        .enter()
+                        .append("circle")
+                        .attr("cx", 100)
+                        .attr("cy", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+                        .attr("r", 7)
+                        .style("fill", function(d){ return color(d)});
+
+                    svg.selectAll("mylabels")
+                        .data(keys)
+                        .enter()
+                        .append("text")
+                        .attr("x", 120)
+                        .attr("y", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+                        .style("fill", function(d){ return color(d)})
+                        .text(function(d){ return d})
+                        .attr("text-anchor", "left")
+                        .style("alignment-baseline", "middle")
+
+                });
+        }
+    }
+</script>
 <header>
     <h1>Analytics</h1>
 </header>

@@ -84,6 +84,8 @@ class BatchUploadPageHandler implements RequestHandlerInterface
             $u = sha1($u);
         }
 
+
+
         //Now insert them into the corresponding tables
         $sql = "INSERT INTO users_table (User_Name) VALUES ( '" . implode("'),('", $uniqueNames) . "')";
         $connection->query($sql);
@@ -102,6 +104,8 @@ class BatchUploadPageHandler implements RequestHandlerInterface
 
         //Decode payload and insert unique elements into their respective tables
         $decodedData =  $this->insertUniques($request, $connection);
+
+        //return new JsonResponse($decodedData);
 
         //Insert the events into event_table
         $sql = "INSERT INTO event_table (Date, User, Accessed, Type, Action) VALUES ";
@@ -137,6 +141,9 @@ class BatchUploadPageHandler implements RequestHandlerInterface
                 if($i != 0){
                     $sql = $sql . ",";
                 }
+                if($user_ID == ''){
+                    //return new JsonResponse($i);
+                }
                 //Add element to query
                 $sql = $sql . "('".addslashes($transformedDate)."','".$user_ID."','".$accessed_ID."','".addslashes($decodedData[0][$i][4])."','".addslashes($decodedData[0][$i][5])."')";
 
@@ -147,7 +154,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
-            return new JsonResponse($sql); //If it doesn't work, send me the SQl request so I can work out why
+            return new JsonResponse($connection->error); //If it doesn't work, send me the SQl request so I can work out why
             return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
         }
 

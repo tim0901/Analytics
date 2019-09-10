@@ -132,15 +132,16 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                             $t[$i]['Module_Name'] = $row['Module_Name'];
                             $i++;
                         }
-                        else if($desiredTable == "modules_table"){
+                        else if($desiredTable == "users_table"){
                             //Return list of users (hashed)
                             $t[$i]['User_ID'] = $row['User_ID'];
                             $t[$i]['User_Name'] = $row['User_Name'];
                             $i++;
                         }
                         else if($desiredTable == "accessed_table"){
-                            $t[$i]['Accessed_ID'] = $row['Accessed_ID'];
+                            //$t[$i]['Accessed_ID'] = $row['Accessed_ID'];
                             $t[$i]['Accessed_Name'] = $row['Accessed_Name'];
+                            $i++;
                         }
                         else{
                             //404 table not found

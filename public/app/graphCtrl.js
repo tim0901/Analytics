@@ -1,64 +1,54 @@
+app.directive('viz',function(){
+    return {
+        restrict: 'E',
+        replace:true,
+        template:'<svg></svg>',
+        link: function(scope, element, attrs){
+            scope.$watch('model',function(newData){
+                updateViz(newData)
+            },true);
+        }
+    };
+});
+
+
 app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$http){
-    var margin = {top: 20, right: 40, bottom: 30, left: 50},
-        width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
 
-    // parse the date / time
-    var parseTime = d3.timeParse("%y-%b-%d");
+    //List of accessible columns
+    $scope.columns = ["Event_ID","Date","Module","User","Accessed","Type","Action"];
 
-    // set the ranges
-    var x = d3.scaleTime().range([0, width]);
-    var y0 = d3.scaleLinear().range([height, 0]);
+    $scope.lists = [];
+    $scope.lists.Accessed = [];
 
-    // define the 1st line
-    var valueline = d3.line()
-        .x((d) => x(d.date))
-        .y((d) => y0(d.close));
+    $scope.model = null;
 
-    // append the svg obgect to the body of the page
-    // appends a 'group' element to 'svg'
-    // moves the 'group' element to the top left margin
-    var svg = d3.select("#graph").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+    $scope.plot = function plot(){
+        $scope.model = [];
+        $scope.model.push("/api/public/graph/&" + $scope.graphColumn0 + "=" + $scope.graphParameter0 + "&" + $scope.graphColumn1 + "=" + $scope.graphParameter1 + "&" + $scope.graphColumn2 + "=" + $scope.graphParameter2 + "&" + $scope.graphColumn3 + "=" + $scope.graphParameter3 + "&" + $scope.graphColumn4 + "=" + $scope.graphParameter4);
+    };
 
-    // Get the data
-    d3.json("/api/public/graph/")
-        .then( function(data){
+    $scope.GetSelectedList = function(){
+        
 
-        console.log("Test");
+        $scope.strList = $scope.lists.Accessed;
+    };
 
-        // format the data
-        data.forEach((d) => {
-            d.date = parseTime(d.date);
-            d.close = +d.close;
-        });
-
-        // Scale the range of the data
-        x.domain(d3.extent(data, d => d.date));
-        y0.domain([0, d3.max(data, d => Math.max(d.close))]);
-
-        // Add the valueline path.
-        svg.append("path")
-            .data([data])
-            .attr("class", "line")
-            .attr("d", valueline);
-
-        // Add the X Axis
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-
-        // Add the Y0 Axis
-        svg.append("g")
-            .attr("class", "axisSteelBlue")
-            .call(d3.axisLeft(y0));
-
-    });
+    function populateLists(){
+            //Populate modules list
+            $http.get("/api/public/accessed_table/").then(function(response){
+                console.log(response);
+                $scope.lists.Accessed  = []; //Clear first
+                if(response.data == null){
+                    $scope.lists.Accessed = "No modules found";
+                }
+                else{
+                    for(var i = 0; i < response.data.length; i++){
+                        $scope.lists.Accessed[i] = response.data[i].Accessed_Name;
+                    }
+                }
+            });
+        }
 
 
-
+    populateLists();
 });

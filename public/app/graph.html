@@ -2,175 +2,13 @@
 <html lang="en">
 <meta charset="utf-8"/>
 
-<link rel="stylesheet" href="/public/css/pageStyle.css"/>
-<link rel="stylesheet" href="/public/css/modalStyle.css"/>
-<link rel="stylesheet" href="/public/css/tableStyle.css"/>
-<style>
-
-    /*Page layout*/
-    header {
-        background-color: #5f054e;
-        color:#f1f1f1;
-        text-align: center;
-        padding: 20px;
-    }
-    .lColumn{
-        padding-top: 10px;
-        float:left;
-        width: 15%;
-    }
-    .rColumn{
-        padding-top: 10px;
-        float:left;
-        width:15%;
-    }
-    .column{
-        padding-top: 10px;
-        float: left;
-    }
-
-    .layoutRow:after{
-        content: "";
-        display: table;
-        clear: both;
-    }
-
-
-    /*Nav bar*/
-
-    ul{
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #333;
-    }
-
-    li{
-        float: left;
-    }
-
-    li a{
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
-    }
-
-    li a:hover{
-        background-color: #111;
-    }
-
-    .active{
-        background-color: #5f054e;
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-    .axis{
-        font: 10px sans-serif;
-    }
-
-    .x.axis path {
-        display: none;
-    }
-
-    .line {
-        fill: none;
-        stroke: steelblue;
-        stroke-width: 1.5px;
-    }
-</style>
+<ul>
+    <li><a href="/#!/app/table.html">Table</a></li>
+    <li><a class="active" href="/#!/app/graph.html">Graph</a></li>
+</ul>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 
-<script>
-    var margin = {top: 20, right: 40, bottom: 30, left: 50},
-        width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
-
-    // parse the date / time
-    var parseTime = d3.timeParse("%Y-%m-%d");
-
-    // Get the data
-    d3.json("/api/public/graph/")
-        .then(function(data){
-            console.log("Test");
-
-            // format the data
-            data.forEach((d) => {
-                d.date = parseTime(d.date);
-                d.events = +d.events;
-            });
-
-            // set the ranges and domains of the data
-            var x = d3.scaleLinear()
-                .range([0, width])
-                .domain(d3.extent(data, d => d.date));
-            var y = d3.scaleLinear()
-                .range([height, 0])
-                .domain([0, d3.max(data, d => Math.max(d.events))]);
-
-            // append the svg object to the body of the page
-            // appends a 'group' element to 'svg'
-            // moves the 'group' element to the top left margin
-            var svg = d3.select("#graph")
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            // define the 1st line
-            var myLine = d3.line()
-                .x((d) => x(d.date))
-                .y((d) => y(d.events));
-
-            // Add the valueline path.
-            svg.append("path")
-                .data([data])
-                .attr("class", "line")
-                .attr("d", myLine);
-
-            // Add the X Axis
-            svg.append("g")
-                .attr("class", "axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x)
-                    .tickFormat(d3.timeFormat("%m/%d")));
-
-            // Add the Y Axis
-            svg.append("g")
-                .attr("class", "axis")
-                .attr("class", "axisSteelBlue")
-                .call(d3.axisLeft(y));
-
-            // text label for the y axis
-            svg.append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 0 - margin.left)
-                .attr("x",0 - (height / 2))
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("Events per day");
-
-
-        });
-</script>
-
-<header>
-    <h1>Analytics</h1>
-</header>
-
-<ul>
-    <li><a href="/#!/app/table.html">Table</a></li>
-    <li><a class="active" href="/app/graph.html">Graph</a></li>
-</ul>
 <body>
 
 <div class="layoutRow">
@@ -181,7 +19,18 @@
 
     <div class="column">
 
-        <p></p>
+        <select ng-model="graphColumn0" ng-options="col for col in columns"></select><select ng-disabled="!graphColumn0" ng-model="graphParameter0" ng-options="x for x in lists.Accessed" ng-change="GetSelectedList()"></select>
+
+
+        <input type="text" ng-model="graphParameter0"><p></p>
+        <select ng-model="graphColumn1" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter1"><p></p>
+        <select ng-model="graphColumn2" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter2"><p></p>
+        <select ng-model="graphColumn3" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter3"><p></p>
+        <select ng-model="graphColumn4" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter4">
+        <button data-ng-click="plot()">Plot</button>
+
+        <viz id='viz'></viz>
+
         <div id="graph"></div>
 
     </div>
