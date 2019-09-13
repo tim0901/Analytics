@@ -28,8 +28,7 @@
             var parseTime = d3.timeParse("%Y-%m-%d");
 
             // Get the data
-            //d3.json("/api/public/graph/&Accessed=Homework&Accessed=Solution&undefined=undefined&undefined=undefined&undefined=undefined")
-            d3.json(newURL[0], {
+             d3.json(newURL[0], {
                 method:"POST",
                 body: angular.toJson(newURL[1])
             })
@@ -70,7 +69,7 @@
 
                     svg = d3.select("#graph")
                         .append("svg")
-                        .attr("width", width + margin.left + margin.right)
+                        .attr("width", width + margin.left + margin.right )
                         .attr("height", height + margin.top + margin.bottom)
                         .append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -118,13 +117,13 @@
                         .attr("class", "legend")
                         .attr("height", 100)
                         .attr("width", 100)
-                        .attr('transform', 'translate(-20,50)');
+                        .attr('transform', 'translate(-200,50)');
 
                     svg.selectAll("mydots")
                         .data(keys)
                         .enter()
                         .append("circle")
-                        .attr("cx", 100)
+                        .attr("cx", 900)
                         .attr("cy", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                         .attr("r", 7)
                         .style("fill", function(d){ return color(d)});
@@ -133,7 +132,7 @@
                         .data(keys)
                         .enter()
                         .append("text")
-                        .attr("x", 120)
+                        .attr("x", 920)
                         .attr("y", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                         .style("fill", function(d){ return color(d)})
                         .text(function(d){ return d})
