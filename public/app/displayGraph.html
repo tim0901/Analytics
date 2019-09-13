@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8"/>
+
+<link rel="stylesheet" href="/public/css/pageStyle.css"/>
+<link rel="stylesheet" href="/public/css/modalStyle.css"/>
+<link rel="stylesheet" href="/public/css/tableStyle.css"/>
+<style>
+
+    /*Page layout*/
+    header {
+        background-color: #5f054e;
+        color:#f1f1f1;
+        text-align: center;
+        padding: 20px;
+    }
+    .lColumn{
+        padding-top: 10px;
+        float:left;
+        width: 15%;
+    }
+    .rColumn{
+        padding-top: 10px;
+        float:left;
+        width:15%;
+    }
+    .column{
+        padding-top: 10px;
+        float: left;
+    }
+
+    .layoutRow:after{
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+
+    /*Nav bar*/
+
+    ul{
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #333;
+    }
+
+    li{
+        float: left;
+    }
+
+    li a{
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    li a:hover{
+        background-color: #111;
+    }
+
+    .active{
+        background-color: #5f054e;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    .axis{
+        font: 10px sans-serif;
+    }
+
+    .x.axis path {
+        display: none;
+    }
+
+</style>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<header>
+    <h1>Analytics</h1>
+</header>
+
+<ul>
+    <li><a href="/#!/app/table.html">Table</a></li>
+    <li><a class="active" href="/app/graph.html">Graph</a></li>
+</ul>
+<body>
+
+<div class="layoutRow">
+    <!--Column 1-->
+    <div class="lColumn">
+        <h3>  </h3>
+    </div>
+
+    <div class="column">
+
+        <p></p>
+        <div id="graph"></div>
+
+    </div>
+
+    <div class="rColumn">
+        <h3>  </h3>
+    </div>
+</div>
+</body>
+
+</html>

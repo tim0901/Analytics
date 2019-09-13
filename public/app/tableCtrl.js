@@ -74,7 +74,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
             }
             else{
                 for(var i = 0; i < response.data.length; i++){
-                    $rootScope.modulesList[i] = response.data[i].Module_Name;
+                    $rootScope.modulesList[i] = response.data[i].name;
                 }
             }
         });

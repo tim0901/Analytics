@@ -77,7 +77,6 @@ app.controller('modalController',function($scope,$rootScope,$routeParams,$http){
             });
     };
 
-
     //Upload file
     $scope.upload = function upload(){
         var reader = new FileReader();

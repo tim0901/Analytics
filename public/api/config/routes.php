@@ -41,7 +41,7 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
 
     //Creating/deleting database
     $app->route('/api/public/createDatabase/',App\Handler\DatabaseCreatorPageHandler::class);
-    $app->route('/api/public/graph/&{desiredColumn0}={desiredValue0}&{desiredColumn1}={desiredValue1}&{desiredColumn2}={desiredValue2}&{desiredColumn3}={desiredValue3}&{desiredColumn4}={desiredValue4}',App\Handler\GraphPageHandler::class);
+    $app->route('/api/public/graph/',App\Handler\GraphPageHandler::class);
 
     //Batch uploading/deleting
     $app->route('/api/public/batchUpload/{moduleName}/',App\Handler\BatchUploadPageHandler::class);

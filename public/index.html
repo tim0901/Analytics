@@ -18,11 +18,10 @@
 <script>
 
     function updateViz(newURL){
-
+        console.log(newURL);
         if(newURL != null){
-
             var margin = {top: 20, right: 40, bottom: 30, left: 50},
-                width = 960 - margin.left - margin.right,
+                width = 1260 - margin.left - margin.right,
                 height = 500 - margin.top - margin.bottom;
 
             // parse the date / time
@@ -30,9 +29,13 @@
 
             // Get the data
             //d3.json("/api/public/graph/&Accessed=Homework&Accessed=Solution&undefined=undefined&undefined=undefined&undefined=undefined")
-            d3.json(newURL)
+            d3.json(newURL[0], {
+                method:"POST",
+                body: angular.toJson(newURL[1])
+            })
                 .then(function(data){
                     console.log("D3");
+                    console.log(data);
 
                     // format the data
                     data.forEach((d) => {

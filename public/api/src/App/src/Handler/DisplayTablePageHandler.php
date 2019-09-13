@@ -112,10 +112,13 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             }
             else{
                 if($desiredValue !== null){
-                    $sql = "SELECT * FROM " . $desiredTable . " WHERE ".$desiredColumn." LIKE '".$desiredValue."'";
+                    $sql = "SELECT * FROM " . $desiredTable . " WHERE ".$desiredColumn." LIKE '".$desiredValue."' ORDER BY ".$desiredColumn;
                 }
                 else{
-                    $sql = "SELECT * FROM " . $desiredTable;
+                    if($desiredTable == "modules_table"){$desiredValue = 'Module_Name';}
+                    else if($desiredTable == "accessed_table"){$desiredValue = 'Accessed_Name';}
+                    else if($desiredTable == "users_table"){$desiredValue = 'User_Name';}
+                    $sql = "SELECT * FROM " . $desiredTable. " ORDER BY ". $desiredValue;
                 }
 
                 $result = $connection->query($sql);
@@ -128,19 +131,19 @@ class DisplayTablePageHandler implements RequestHandlerInterface
                     while($row = $result->fetch_assoc()){
                         if($desiredTable == "modules_table"){
                             //Return list of modules
-                            $t[$i]['Module_ID'] = $row['Module_ID'];
-                            $t[$i]['Module_Name'] = $row['Module_Name'];
+                            $t[$i]['id'] = $row['Module_ID'];
+                            $t[$i]['name'] = $row['Module_Name'];
                             $i++;
                         }
                         else if($desiredTable == "users_table"){
                             //Return list of users (hashed)
-                            $t[$i]['User_ID'] = $row['User_ID'];
-                            $t[$i]['User_Name'] = $row['User_Name'];
+                            $t[$i]['id'] = $row['User_ID'];
+                            $t[$i]['name'] = $row['User_Name'];
                             $i++;
                         }
                         else if($desiredTable == "accessed_table"){
-                            //$t[$i]['Accessed_ID'] = $row['Accessed_ID'];
-                            $t[$i]['Accessed_Name'] = $row['Accessed_Name'];
+                            $t[$i]['id'] = $row['Accessed_ID'];
+                            $t[$i]['name'] = $row['Accessed_Name'];
                             $i++;
                         }
                         else{

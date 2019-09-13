@@ -45,19 +45,21 @@ class GraphPageHandler implements RequestHandlerInterface
 
     }
 
-    public function getAction(ServerRequestInterface $request, mysqli $connection){
+    public function postAction(ServerRequestInterface $request, mysqli $connection){
 
-//        $desiredColumn = $request->getAttribute('desiredColumn','accessed');
-        //      $desiredValue = $request->getAttribute('desiredValue', 'File');
+        //Process JSON payload
+        $data = $request->getBody()->__toString(); //This is the uploaded file in String format
+        $decodedData = @json_decode($data);//This is the file in an array
 
-        for($i = 0; $i < 5; $i++){
-            $desiredColumn[$i] = $request->getAttribute('desiredColumn'.$i, "null");
-            $desiredValue[$i] = $request->getAttribute('desiredValue'.$i, "null");
+        //Extract from dataset
+        foreach($decodedData[0] as $d){
+            $desiredColumn[] = $d[1];
+            $desiredValue[] = $d[2];
         }
 
         //Check connection was successful
         if($connection->connect_error){
-            $data['error'] = ("MySQL connection failed. " . $connection->connect_error);
+            return new JsonResponse($connection->connect_error);
         }
         else{
 
@@ -66,12 +68,13 @@ class GraphPageHandler implements RequestHandlerInterface
             //Table container to be passed to template
             $t = null;
 
-            for($i = 0; $i < 5; $i++){
-                if($desiredValue[$i] == "undefined"){
+            for($i = 0; $i < sizeof($desiredColumn); $i++){
+                if($desiredValue[$i] == "undefined" || $desiredValue[$i] == null){
 
                 }
                 else{
 
+                    //Convert column names to the format needed by the SQL query
                     if($desiredColumn[$i] == "Module"){
                         $desiredColumn[$i] = "mt.Module_Name";
                     }
@@ -84,10 +87,11 @@ class GraphPageHandler implements RequestHandlerInterface
                     else if($desiredColumn[$i] == "Type"){
                         $desiredColumn[$i] = "type";
                     }
-
                     if($desiredColumn[$i] !== "Event_ID"){
-                        $altDesiredValue = "%" . $desiredValue[$i] . "%";
+                        $altDesiredValue = $desiredValue[$i];
                     }
+
+                    //Create query
                     $result = null;
                     $sql = "SELECT count(et.Event_ID), date(et.Date) as 'Date'
                             FROM event_table AS et 
@@ -100,7 +104,6 @@ class GraphPageHandler implements RequestHandlerInterface
                             ";
 
                     $result = $connection->query($sql);
-                    //  return new JsonResponse($desiredColumn);
 
                     //Check there is data present
                     if($result->num_rows > 0){
@@ -114,11 +117,12 @@ class GraphPageHandler implements RequestHandlerInterface
                         }
                     }
                     else{
-                        return new JsonResponse($connection->error);
+                        if($connection->error){
+                            return new JsonResponse($connection->error);
+                        }
                         $connection->close();
                         $data = null;
-                        return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
-                        return new JsonResponse($data);
+                        return new EmptyResponse(StatusCodeInterface::STATUS_NOT_FOUND);
                     }
                 }
 
@@ -127,9 +131,6 @@ class GraphPageHandler implements RequestHandlerInterface
             $connection->close();
             return new JsonResponse($data);
         }
-
-        //This is here to stop PHPStorm from complaining that there isn't a return statement. It should never be reached.
-        return new EmptyResponse(StatusCodeInterface::STATUS_NOT_FOUND);
     }
 
 
@@ -148,8 +149,8 @@ class GraphPageHandler implements RequestHandlerInterface
         $connection = new mysqli($servername,$username,$pass,$databasename);
 
         switch ($request->getMethod()){
-            case 'GET':
-                return $this->getAction($request,$connection);
+            case 'POST':
+                return $this->postAction($request,$connection);
             default:
                 $connection->close();
                 return new EmptyResponse(StatusCodeInterface::STATUS_FORBIDDEN);

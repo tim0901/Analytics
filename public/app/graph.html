@@ -19,14 +19,22 @@
 
     <div class="column">
 
-        <select ng-model="graphColumn0" ng-options="col for col in columns"></select><select ng-disabled="!graphColumn0" ng-model="graphParameter0" ng-options="x for x in lists.Accessed" ng-change="GetSelectedList()"></select>
+        <div class="dynamicRows">
+            <div class="form-group" data-ng-repeat="(choicekey, choice) in choices[0]">
+
+                <select ng-model="c" ng-options="col for col in columns" ng-change="loadColumn(choicekey,c,val)"></select>
+                <select name="val" ng-model="val" ng-change="updateChoice(choicekey,c,val)">
+                    <option value="">Select</option>
+                    <option ng-repeat="o in opts" value="{{o.name}}">{{o.name}}</option>
+                </select>
+                <button ng-click="deleteChoice(choicekey)">Delete line</button>
+                <br>
+            </div>
+            <button ng-click="addNewChoice()">Add Choice</button>
 
 
-        <input type="text" ng-model="graphParameter0"><p></p>
-        <select ng-model="graphColumn1" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter1"><p></p>
-        <select ng-model="graphColumn2" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter2"><p></p>
-        <select ng-model="graphColumn3" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter3"><p></p>
-        <select ng-model="graphColumn4" ng-options="x for x in columns"></select><input type="text" ng-model="graphParameter4">
+        </div>
+
         <button data-ng-click="plot()">Plot</button>
 
         <viz id='viz'></viz>
