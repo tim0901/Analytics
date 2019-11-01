@@ -26,19 +26,22 @@ app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     $scope.index = 1;
     var found = null;
 
+    //Add another line
     $scope.addNewChoice = function() {
         var newItemNo = $scope.choices.length+1;
         $scope.choices[0].push([$scope.index++,null, null]);
         console.log($scope.choices);
     };
 
+    //Update a current line
     $scope.updateChoice = function(idx,col,opt){
         //Update the correct row in the array
         console.log("ID:" + idx + col + opt);
         found = $scope.choices[0].find(function(element){
             return element[0] == idx;
         });
-        //These thankfully work like pointers
+
+        //These (thankfully) seem to work like pointers
         found[1]= col;
         found[2] = opt;
         console.log("found: ");
@@ -46,6 +49,7 @@ app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     };
 
 
+    //Delete a line from the graph by removing its data
     $scope.deleteChoice = function(idx){
         console.log("Delete choice ID: " + idx);
 
@@ -58,11 +62,12 @@ app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$ht
                 $scope.choices[0][i][0]--;
             }
         }
-        $scope.index--
+        $scope.index--;
         console.log($scope.choices);
         //delete $scope.choices[0][idx];
     };
 
+    //Plot!
     $scope.plot = function plot(){
         console.log("Plot");
         $scope.model = [];
@@ -73,6 +78,7 @@ app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         $scope.model.push($payload);
     };
 
+    //Show correct dropdown list
     $scope.loadColumn = function (idx,col,opt) {
         if(col === "Accessed"){
             $scope.opts = $scope.accessedData;
@@ -86,7 +92,7 @@ app.controller('GraphCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         $scope.updateChoice(idx,col,opt);
     };
 
-    //Load the values for the drop down list
+    //Load the values for the drop down lists
     function loadValues(){
         $http.get("/api/public/users_table/").then(function(response){
             console.log(response.data);

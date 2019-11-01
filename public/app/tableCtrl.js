@@ -11,6 +11,7 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
 
     $rootScope.selectedFile = document.getElementById("uploadFile");
 
+    //Create the database!
     function createDatabase(){
         $http.post("api/public/createDatabase/").then(function(response){
             console.log(response);
@@ -85,8 +86,10 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
     //Populate the Table
     function populateTable(){
 
+        //Clear it first
         clearTable();
 
+        //Reset variables
         let row,cell = null;
 
         //Filling the table is dealt with by table.html. This returns an error if no data is returned.
@@ -173,12 +176,10 @@ app.controller('TableCtrl',function($scope,$rootScope,$routeParams,$location,$ht
         })
     };
 
-    //When finished loading, load the table based on the URL, if this is the first session.
+    //When finished loading, load the table based on the URL if this is the first session.
     if(!$rootScope.firstOpen){
         $rootScope.firstOpen = true;
         createDatabase();
     }
-    //createDatabase();
-    //loadData("event_table",$routeParams.column,$routeParams.parameter);
 
 });

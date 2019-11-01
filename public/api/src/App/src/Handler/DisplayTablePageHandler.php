@@ -172,7 +172,6 @@ class DisplayTablePageHandler implements RequestHandlerInterface
 
     public function postAction(ServerRequestInterface $request, mysqli $connection){
 
-        $table = $request->getAttribute('desiredTable',null);
         $date = $request->getAttribute('date',null);
         $module = $request->getAttribute('module',null);
         $user = $request->getAttribute('user',null);
@@ -180,17 +179,43 @@ class DisplayTablePageHandler implements RequestHandlerInterface
         $type = $request->getAttribute('type',null);
         $action = $request->getAttribute('action',null);
 
-        //Fetch the Module_ID for the module, which is the foreign key used in event_table.
+
+        //Insert module into modules_table
+        $sql = "INSERT INTO modules_table (Module_Name) VALUES ('".$module ."')";
+        $connection->query($sql);
+
+        //Fetch the Module_ID for the module, which is the foreign key used in accessed_table.
         $sql = "SELECT Module_ID FROM modules_table WHERE Module_Name = '". $module ."'";
         $module_ID = $connection->query($sql)->fetch_row()[0];
 
-        $sql = "INSERT INTO ".$table." (Date, Module, User, Accessed, Type, Action) VALUES ('".$date."', '".$module_ID."', '".$user."', '".$accessed."', '".$type."', '".$action."')";
+        //Insert Accessed into table, with module tag
+        $sql = "INSERT INTO accessed_table (Module_ID, Accessed_Name) VALUES ( '".$module_ID."', '".$accessed."')";
+        $connection->query($sql);
+
+        //Fetch the Accessed_ID for the event, which is a foreign key used in events_table.
+        $sql = "SELECT Accessed_ID FROM accessed_table WHERE Accessed_Name = '". $accessed ."'";
+        $accessed_ID = $connection->query($sql)->fetch_row()[0];
+
+        //Hash the name of the user
+        $user_hash = sha1($user);
+
+        //Insert the User into table
+        $sql = "INSERT INTO users_table (User_Name) VALUES ( '".$user_hash."')";
+        $connection->query($sql);
+
+        //Fetch the User_ID for the event, which is a foreign key used in events_table.
+        $sql = "SELECT User_ID FROM users_table WHERE User_Name = '". $user_hash ."'";
+        $user_ID = $connection->query($sql)->fetch_row()[0];
+
+
+        $sql = "INSERT INTO event_table (Date, User, Accessed, Type, Action) VALUES ('".$date."', '".$user_ID."', '".$accessed_ID."', '".$type."', '".$action."')";
 
         if ($connection->query($sql) === true){
             return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new JsonResponse($connection->error); //If it doesn't work, send me the SQl request so I can work out why
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
     }
 
@@ -207,7 +232,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
     }
 
@@ -227,7 +252,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
     }
 
@@ -242,7 +267,7 @@ class DisplayTablePageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
 
     }

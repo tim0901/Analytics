@@ -51,7 +51,7 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
 
         //Create database
 
-        $sql = "CREATE DATABASE analytics_database";
+        $sql = "CREATE DATABASE analytics_database"; //This has been done already by docker, and so isn't necessary
 
         $sql = "USE analytics_database";
         $connection->query($sql);
@@ -93,7 +93,6 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
         );";
         $connection->query($sql);
 
-
         $sql = "create table if not exists event_table
         (
             Event_ID int auto_increment
@@ -116,12 +115,11 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_CREATED);
         }
         else{
-            $connection->close();
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new JsonResponse($connection->error); //If it doesn't work, send me the SQl request so I can work out why
         }
     }
 
-    //Drop all table in database!!!
+    //Drop all tables in the database!!! This is only called via Postman
     public function deleteAction(ServerRequestInterface $request, mysqli $connection){
 
         $sql = "DROP TABLE event_table";
@@ -141,7 +139,7 @@ class DatabaseCreatorPageHandler implements RequestHandlerInterface
         }
         else{
             $connection->close();
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
 
     }

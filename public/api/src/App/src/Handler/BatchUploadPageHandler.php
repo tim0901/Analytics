@@ -84,8 +84,6 @@ class BatchUploadPageHandler implements RequestHandlerInterface
             $u = sha1($u);
         }
 
-
-
         //Now insert them into the corresponding tables
         $sql = "INSERT INTO users_table (User_Name) VALUES ( '" . implode("'),('", $uniqueNames) . "')";
         $connection->query($sql);
@@ -98,9 +96,6 @@ class BatchUploadPageHandler implements RequestHandlerInterface
 
     //Batch upload
     public function postAction(ServerRequestInterface $request, mysqli $connection){
-
-        //Couldn't get JSON_TABLE insertion to work
-        //$sql = "INSERT INTO event_table (Date,User,Affected_User,Accessed,Type,Action,Description,Origin,IP) SELECT * FROM JSON_TABLE (" . $decodedData . ", '$[0]' COLUMNS( Date VARCHAR(30) PATH '$.[0]',User VARCHAR(10) PATH '$.[1]', Affected_User VARCHAR(100) PATH '$.[2]', Accessed VARCHAR(100) PATH '$.[3]', Type VARCHAR(30) PATH '$.[4]', Action VARCHAR(100) PATH '$.[5]', Description VARCHAR(200) PATH '$.[6]',Origin VARCHAR(10) PATH '$.[7]', IP VARCHAR(20) PATH '$.[8]')) AS jt1";
 
         //Decode payload and insert unique elements into their respective tables
         $decodedData =  $this->insertUniques($request, $connection);
@@ -141,6 +136,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
                 if($i != 0){
                     $sql = $sql . ",";
                 }
+                //If any events failed the user_id lookup, don't try and insert them into the query.
                 if($user_ID == ''){
                     //return new JsonResponse($i);
                 }
@@ -155,7 +151,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
         }
         else{
             return new JsonResponse($connection->error); //If it doesn't work, send me the SQl request so I can work out why
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
 
     }
@@ -172,7 +168,7 @@ class BatchUploadPageHandler implements RequestHandlerInterface
             return new EmptyResponse(StatusCodeInterface::STATUS_OK);
         }
         else{
-            return new EmptyResponse(StatusCodeInterface::STATUS_IM_A_TEAPOT);
+            return new EmptyResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
 
     }
